@@ -200,16 +200,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight - 32.0,
+                  minHeight: constraints.maxHeight - 24.0,
                 ),
                 child: IntrinsicHeight(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Top Bar with Language Toggle
+                      // Top Language Toggle
                       const Align(
                         alignment: Alignment.centerRight,
                         child: LanguageToggleButton(),
@@ -218,9 +218,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       const Spacer(flex: 1),
 
                       // ==============================================================
-                      // LIVE 3D ANIMATED HERO HEADER EMBLEM (ROTATING & LEVITATING)
+                      // LIVE SACRED ZODIAC MANDALA WHEEL ANIMATION
                       // ==============================================================
-                      const Live3DHeaderEmblem(),
+                      const AstroZodiacMandalaWheel(),
+
+                      const SizedBox(height: 16),
+
+                      Text(
+                        'Daivik',
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 30,
+                          color: AppColors.primarySaffronDark,
+                          letterSpacing: 0.5,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Experience Divine Peace & Daily Bhakti Guidance',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.75),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
 
                       const Spacer(flex: 2),
 
@@ -407,7 +430,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           ],
 
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 14),
                           const Center(
                             child: Text(
                               'By signing in, you agree to our Terms & Privacy Policy.',
@@ -429,150 +452,253 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 }
 
-/// LIVE 3D ANIMATED HEADER EMBLEM (ROTATING ORBITAL HALO & LEVITATION WAVES)
-class Live3DHeaderEmblem extends StatefulWidget {
-  const Live3DHeaderEmblem({super.key});
+/// SACRED ASTROLOGICAL ZODIAC MANDALA WHEEL ANIMATION WIDGET
+class AstroZodiacMandalaWheel extends StatefulWidget {
+  const AstroZodiacMandalaWheel({super.key});
 
   @override
-  State<Live3DHeaderEmblem> createState() => _Live3DHeaderEmblemState();
+  State<AstroZodiacMandalaWheel> createState() => _AstroZodiacMandalaWheelState();
 }
 
-class _Live3DHeaderEmblemState extends State<Live3DHeaderEmblem>
+class _AstroZodiacMandalaWheelState extends State<AstroZodiacMandalaWheel>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
+  late AnimationController _rotationController;
+
+  static const List<ZodiacBadgeData> _zodiacSigns = [
+    ZodiacBadgeData(symbol: '♈', color: Color(0xFFE53935), label: 'Aries'),
+    ZodiacBadgeData(symbol: '♉', color: Color(0xFFFB8C00), label: 'Taurus'),
+    ZodiacBadgeData(symbol: '♊', color: Color(0xFFFFB300), label: 'Gemini'),
+    ZodiacBadgeData(symbol: '♋', color: Color(0xFF7CB342), label: 'Cancer'),
+    ZodiacBadgeData(symbol: '♌', color: Color(0xFFFF9800), label: 'Leo'),
+    ZodiacBadgeData(symbol: '♍', color: Color(0xFF43A047), label: 'Virgo'),
+    ZodiacBadgeData(symbol: '♎', color: Color(0xFF00ACC1), label: 'Libra'),
+    ZodiacBadgeData(symbol: '♏', color: Color(0xFF1E88E5), label: 'Scorpio'),
+    ZodiacBadgeData(symbol: '♐', color: Color(0xFF3949AB), label: 'Sagittarius'),
+    ZodiacBadgeData(symbol: '♑', color: Color(0xFF8E24AA), label: 'Capricorn'),
+    ZodiacBadgeData(symbol: '♒', color: Color(0xFF5E35B1), label: 'Aquarius'),
+    ZodiacBadgeData(symbol: '♓', color: Color(0xFFD81B60), label: 'Pisces'),
+  ];
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
+    _rotationController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 8),
+      duration: const Duration(seconds: 24),
     )..repeat();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _rotationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    const double wheelSize = 260.0;
 
     return AnimatedBuilder(
-      animation: _controller,
+      animation: _rotationController,
       builder: (context, child) {
-        final t = _controller.value;
-        final levitateY = sin(t * 2 * pi) * 8.0;
-        final rotationAngle = t * 2 * pi;
-        final pulseScale = 1.0 + sin(t * 4 * pi) * 0.04;
+        final progress = _rotationController.value;
+        final rotationAngle = progress * 2 * pi;
 
-        return Stack(
-          alignment: Alignment.center,
-          children: [
-            // 1. Ambient Pulsing Radiance Aura
-            Container(
-              width: 140 * pulseScale,
-              height: 140 * pulseScale,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.primarySaffron.withValues(alpha: 0.15),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primarySaffron.withValues(alpha: 0.35),
-                    blurRadius: 36 * pulseScale,
-                    spreadRadius: 8,
-                  ),
-                ],
+        return SizedBox(
+          width: wheelSize,
+          height: wheelSize,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // 1. Custom Painter for Yantra Geometric Star Lines & Circles
+              CustomPaint(
+                size: const Size(wheelSize, wheelSize),
+                painter: MandalaYantraPainter(
+                  rotationAngle: rotationAngle,
+                  primaryColor: AppColors.primarySaffron,
+                  accentColor: AppColors.amberGold,
+                ),
               ),
-            ),
 
-            // 2. 3D Rotating Golden Orbital Halo Ring
-            Transform(
-              transform: Matrix4.identity()
-                ..setEntry(3, 2, 0.0015)
-                ..rotateY(rotationAngle)
-                ..rotateX(0.45),
-              alignment: Alignment.center,
-              child: Container(
-                width: 130,
-                height: 130,
+              // 2. Center Sun Rays & Radiant Core Emblem (Matching Reference Image)
+              Container(
+                width: 76,
+                height: 76,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppColors.amberGold.withValues(alpha: 0.7),
-                    width: 2.5,
-                  ),
+                  color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.amberGold.withValues(alpha: 0.4),
-                      blurRadius: 16,
-                      spreadRadius: 2,
+                      color: AppColors.primarySaffron.withValues(alpha: 0.35),
+                      blurRadius: 20,
+                      spreadRadius: 4,
                     ),
                   ],
                 ),
+                child: Center(
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Sun Rays Pulse
+                      Transform.rotate(
+                        angle: -rotationAngle * 0.5,
+                        child: Icon(
+                          Icons.wb_sunny_rounded,
+                          size: 54,
+                          color: AppColors.amberGold.withValues(alpha: 0.8),
+                        ),
+                      ),
+                      // Inner Crescent Moon & Star
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFF4A148C), // Deep Cosmic Purple
+                        ),
+                        child: const Center(
+                          child: Text(
+                            '🌙',
+                            style: TextStyle(fontSize: 18),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
 
-            // 3. Central Levitating 3D Saffron Flag Emblem & Title Card
-            Transform.translate(
-              offset: Offset(0, levitateY),
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(20),
+              // 3. Outer Orbiting 12 Zodiac Badge Nodes
+              ...List.generate(_zodiacSigns.length, (index) {
+                final baseAngle = (index * 2 * pi) / _zodiacSigns.length;
+                final currentAngle = baseAngle + rotationAngle;
+
+                // Orbit radius = 108px
+                const radius = 108.0;
+                final x = radius * cos(currentAngle);
+                final y = radius * sin(currentAngle);
+
+                final badge = _zodiacSigns[index];
+
+                return Transform.translate(
+                  offset: Offset(x, y),
+                  child: Container(
+                    width: 28,
+                    height: 28,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: AppColors.saffronGradient,
+                      color: badge.color,
+                      border: Border.all(color: Colors.white, width: 1.5),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primarySaffron.withValues(alpha: 0.5),
-                          blurRadius: 22,
-                          spreadRadius: 3,
-                          offset: const Offset(0, 6),
+                          color: badge.color.withValues(alpha: 0.4),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
                         ),
                       ],
                     ),
-                    child: const Text('🚩', style: TextStyle(fontSize: 44)),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // 3D Shimmer Animated Title Text
-                  Text(
-                    'Daivik',
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 32,
-                      color: AppColors.primarySaffronDark,
-                      letterSpacing: 0.8,
-                      shadows: [
-                        Shadow(
-                          color: AppColors.primarySaffron.withValues(alpha: 0.6 + sin(t * 2 * pi) * 0.2),
-                          blurRadius: 16 + sin(t * 2 * pi) * 6,
-                          offset: const Offset(0, 4),
+                    child: Center(
+                      child: Text(
+                        badge.symbol,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
                         ),
-                      ],
+                      ),
                     ),
-                    textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Experience Divine Peace & Daily Bhakti',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.75),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-          ],
+                );
+              }),
+            ],
+          ),
         );
       },
     );
+  }
+}
+
+class ZodiacBadgeData {
+  final String symbol;
+  final Color color;
+  final String label;
+
+  const ZodiacBadgeData({
+    required this.symbol,
+    required this.color,
+    required this.label,
+  });
+}
+
+/// CUSTOM PAINTER FOR SACRED YANTRA GEOMETRIC STAR LINES & DASHED CIRCLES
+class MandalaYantraPainter extends CustomPainter {
+  final double rotationAngle;
+  final Color primaryColor;
+  final Color accentColor;
+
+  MandalaYantraPainter({
+    required this.rotationAngle,
+    required this.primaryColor,
+    required this.accentColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final outerRadius = size.width / 2 - 22;
+    final innerRadius = outerRadius * 0.62;
+
+    // 1. Outer Orbit Line
+    final orbitPaint = Paint()
+      ..color = primaryColor.withValues(alpha: 0.25)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+
+    canvas.drawCircle(center, outerRadius, orbitPaint);
+
+    // 2. Dashed Inner Circle
+    final dashedPaint = Paint()
+      ..color = accentColor.withValues(alpha: 0.35)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+
+    const dashCount = 36;
+    for (int i = 0; i < dashCount; i++) {
+      final startAngle = (i * 2 * pi) / dashCount + rotationAngle * 0.5;
+      final sweepAngle = pi / dashCount;
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: innerRadius),
+        startAngle,
+        sweepAngle,
+        false,
+        dashedPaint,
+      );
+    }
+
+    // 3. Interlocking Geometric Yantra Lines (Matching Star Constellations in Screenshot)
+    final starLinePaint = Paint()
+      ..color = primaryColor.withValues(alpha: 0.18)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+
+    const numPoints = 8;
+    final points = <Offset>[];
+    for (int i = 0; i < numPoints; i++) {
+      final a = (i * 2 * pi) / numPoints + rotationAngle;
+      points.add(Offset(
+        center.dx + innerRadius * cos(a),
+        center.dy + innerRadius * sin(a),
+      ));
+    }
+
+    for (int i = 0; i < numPoints; i++) {
+      final nextIndex = (i + 3) % numPoints;
+      canvas.drawLine(points[i], points[nextIndex], starLinePaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant MandalaYantraPainter oldDelegate) {
+    return oldDelegate.rotationAngle != rotationAngle;
   }
 }
