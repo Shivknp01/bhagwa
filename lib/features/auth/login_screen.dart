@@ -230,10 +230,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               const SizedBox(height: 28),
 
               Text(
-                'Bhakti Sanga',
+                'Daivik',
                 style: theme.textTheme.headlineLarge?.copyWith(
                   fontWeight: FontWeight.bold,
-                  fontSize: 30,
+                  fontSize: 32,
                   color: AppColors.primarySaffronDark,
                 ),
                 textAlign: TextAlign.center,

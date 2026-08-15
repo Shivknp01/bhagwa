@@ -18,13 +18,13 @@ void main() async {
 
   runApp(
     const ProviderScope(
-      child: BhaktiApp(),
+      child: DaivikApp(),
     ),
   );
 }
 
-class BhaktiApp extends ConsumerWidget {
-  const BhaktiApp({super.key});
+class DaivikApp extends ConsumerWidget {
+  const DaivikApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -32,7 +32,7 @@ class BhaktiApp extends ConsumerWidget {
     final userPrefs = ref.watch(userPreferencesProvider);
 
     return MaterialApp.router(
-      title: 'Bhagwa Devotional',
+      title: 'Daivik',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,

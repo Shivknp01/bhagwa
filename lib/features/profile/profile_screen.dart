@@ -313,7 +313,7 @@ class ProfileScreen extends ConsumerWidget {
             _buildSettingTile(
               context,
               icon: Icons.info_rounded,
-              title: 'About Bhakti Sanga App (v1.0.0)',
+              title: 'About Daivik App (v1.0.0)',
               onTap: () {},
             ),
             const SizedBox(height: 24),
@@ -325,7 +325,7 @@ class ProfileScreen extends ConsumerWidget {
                   context: context,
                   builder: (context) => AlertDialog(
                     title: const Text('Logout Session?'),
-                    content: const Text('Are you sure you want to log out of Bhakti Sanga?'),
+                    content: const Text('Are you sure you want to log out of Daivik?'),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context, false),

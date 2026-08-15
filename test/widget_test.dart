@@ -6,10 +6,10 @@ void main() {
   testWidgets('App renders without crashing', (WidgetTester tester) async {
     await tester.pumpWidget(
       const ProviderScope(
-        child: BhaktiApp(),
+        child: DaivikApp(),
       ),
     );
     await tester.pump();
-    expect(find.byType(BhaktiApp), findsOneWidget);
+    expect(find.byType(DaivikApp), findsOneWidget);
   });
 }
