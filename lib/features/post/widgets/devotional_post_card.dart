@@ -17,11 +17,7 @@ class DevotionalPostCard extends ConsumerStatefulWidget {
   final DevotionalPost post;
   final VoidCallback? onPostUpdated;
 
-  const DevotionalPostCard({
-    super.key,
-    required this.post,
-    this.onPostUpdated,
-  });
+  const DevotionalPostCard({super.key, required this.post, this.onPostUpdated});
 
   @override
   ConsumerState<DevotionalPostCard> createState() => _DevotionalPostCardState();
@@ -82,7 +78,9 @@ class _DevotionalPostCardState extends ConsumerState<DevotionalPostCard>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            _post.isSaved ? 'Saved to collection 🔖' : 'Removed from collection',
+            _post.isSaved
+                ? 'Saved to collection 🔖'
+                : 'Removed from collection',
           ),
           duration: const Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
@@ -171,7 +169,8 @@ class _DevotionalPostCardState extends ConsumerState<DevotionalPostCard>
     final audioState = ref.watch(audioServiceProvider);
     final prefs = ref.watch(userPreferencesProvider);
     final lang = prefs.appLanguage;
-    final isCurrentlyPlayingThis = audioState.isPlaying && audioState.currentPost?.id == _post.id;
+    final isCurrentlyPlayingThis =
+        audioState.isPlaying && audioState.currentPost?.id == _post.id;
 
     final displayTitle = _post.localizedTitle(lang);
     final displayDescription = _post.localizedDescription(lang);
@@ -217,7 +216,10 @@ class _DevotionalPostCardState extends ConsumerState<DevotionalPostCard>
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primarySaffron.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
@@ -275,9 +277,7 @@ class _DevotionalPostCardState extends ConsumerState<DevotionalPostCard>
                 const SizedBox(height: 4),
                 Text(
                   displayDescription,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    height: 1.35,
-                  ),
+                  style: theme.textTheme.bodyMedium?.copyWith(height: 1.35),
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -333,7 +333,9 @@ class _DevotionalPostCardState extends ConsumerState<DevotionalPostCard>
                   imageUrl: _post.imageUrl,
                   title: displayTitle,
                   category: _post.contentType.name,
-                  height: _post.contentType == PostContentType.wallpaper ? 280 : 200,
+                  height: _post.contentType == PostContentType.wallpaper
+                      ? 280
+                      : 200,
                 ),
               ),
             ),
@@ -396,7 +398,9 @@ class _DevotionalPostCardState extends ConsumerState<DevotionalPostCard>
                       _post.isLiked
                           ? Icons.favorite_rounded
                           : Icons.favorite_border_rounded,
-                      color: _post.isLiked ? AppColors.sacredRed : theme.iconTheme.color,
+                      color: _post.isLiked
+                          ? AppColors.sacredRed
+                          : theme.iconTheme.color,
                       size: 22,
                     ),
                   ),
@@ -434,13 +438,15 @@ class _DevotionalPostCardState extends ConsumerState<DevotionalPostCard>
                 const SizedBox(width: 16),
 
                 // Views Indicator
-                const Icon(Icons.visibility_outlined, size: 18, color: Colors.grey),
+                const Icon(
+                  Icons.visibility_outlined,
+                  size: 18,
+                  color: Colors.grey,
+                ),
                 const SizedBox(width: 4),
                 Text(
                   NumberFormatter.formatCount(_post.views),
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontSize: 12,
-                  ),
+                  style: theme.textTheme.bodyMedium?.copyWith(fontSize: 12),
                 ),
 
                 const Spacer(),

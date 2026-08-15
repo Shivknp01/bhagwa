@@ -8,6 +8,7 @@ import '../../core/widgets/loading_indicator.dart';
 import '../../data/repositories/mock_content_repository.dart';
 import '../../models/devotional_post.dart';
 import '../post/widgets/devotional_post_card.dart';
+import '../../services/marketing_event_service.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -97,6 +98,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _onCategoryTileTap(String name) {
+    MarketingEventService.trackProductEvent('category_click', parameters: {'category_name': name});
     if (name.toLowerCase() == 'all') {
       _loadFeed();
     } else if (name.toLowerCase() == 'horoscope') {

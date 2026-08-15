@@ -6,10 +6,18 @@ import 'core/theme/app_theme.dart';
 import 'core/supabase/supabase_client.dart';
 import 'services/storage_service.dart';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'services/marketing_event_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase Core for Analytics & Crash reporting
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    debugPrint('Firebase initialization notice: $e');
+  }
   
   // Initialize Marketing Event Service install tracking
   MarketingEventService.trackInstall();
