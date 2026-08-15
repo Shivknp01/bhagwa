@@ -15,7 +15,8 @@ class LoginScreen extends ConsumerStatefulWidget {
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen>
+    with SingleTickerProviderStateMixin {
   final AuthService _authService = AuthService();
   RealtimeChannel? _realtimeChannel;
 
@@ -28,10 +29,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   AuthSettings _authSettings = const AuthSettings();
 
+  // 3D Parallax Tilt for Header Branding Emblem
+  double _tiltX = 0.0;
+  double _tiltY = 0.0;
+
+  // 3D Floating Levitation Animation
+  late AnimationController _levitateController;
+  late Animation<double> _levitateAnim;
+
   @override
   void initState() {
     super.initState();
     _initAuthSettingsAndRealtime();
+
+    _levitateController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    )..repeat(reverse: true);
+
+    _levitateAnim = Tween<double>(begin: -6.0, end: 6.0).animate(
+      CurvedAnimation(parent: _levitateController, curve: Curves.easeInOutSine),
+    );
   }
 
   Future<void> _initAuthSettingsAndRealtime() async {
@@ -55,6 +73,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   void dispose() {
+    _levitateController.dispose();
     _realtimeChannel?.unsubscribe();
     _nameController.dispose();
     _phoneController.dispose();
@@ -191,9 +210,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  void _onPanUpdate(DragUpdateDetails details, Size screenSize) {
+    final dx = details.localPosition.dx - screenSize.width / 2;
+    final dy = details.localPosition.dy - screenSize.height / 2;
+    setState(() {
+      _tiltY = (dx / (screenSize.width / 2)).clamp(-1.0, 1.0) * 0.22;
+      _tiltX = (-dy / (screenSize.height / 2)).clamp(-1.0, 1.0) * 0.22;
+    });
+  }
+
+  void _onPanEnd(DragEndDetails details) {
+    setState(() {
+      _tiltX = 0.0;
+      _tiltY = 0.0;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final screenSize = MediaQuery.of(context).size;
 
     return Scaffold(
       body: SafeArea(
@@ -215,53 +251,125 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         child: LanguageToggleButton(),
                       ),
 
-                      // Flexible top space to position branding nicely
+                      // Flexible top space to position 3D header emblem
                       const Spacer(flex: 1),
 
-                      // Header Logo & Branding
-                      Center(
-                        child: Container(
-                          padding: const EdgeInsets.all(18),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: AppColors.saffronGradient,
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.primarySaffron.withValues(alpha: 0.25),
-                                blurRadius: 18,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
+                      // ==============================================================
+                      // 3D INTERACTIVE HEADER BRANDING EMBLEM ONLY (TILT & LEVITATION)
+                      // ==============================================================
+                      GestureDetector(
+                        onPanUpdate: (d) => _onPanUpdate(d, screenSize),
+                        onPanEnd: _onPanEnd,
+                        child: TweenAnimationBuilder<Matrix4>(
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeOutCubic,
+                          tween: Matrix4Tween(
+                            begin: Matrix4.identity(),
+                            end: Matrix4.identity()
+                              ..setEntry(3, 2, 0.0015)
+                              ..rotateX(_tiltX)
+                              ..rotateY(_tiltY),
                           ),
-                          child: const Text('🚩', style: TextStyle(fontSize: 42)),
-                        ),
-                      ),
+                          builder: (context, transformMatrix, child) {
+                            return Transform(
+                              transform: transformMatrix,
+                              alignment: Alignment.center,
+                              child: child,
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surface,
+                              borderRadius: BorderRadius.circular(28),
+                              border: Border.all(
+                                color: AppColors.primarySaffron.withValues(alpha: 0.35),
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primarySaffron.withValues(alpha: 0.25),
+                                  blurRadius: 28,
+                                  spreadRadius: -2,
+                                  offset: Offset(-_tiltY * 30, _tiltX * 30 + 8),
+                                ),
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.08),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 10),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              children: [
+                                // 3D Levitating Glowing Flag Sphere
+                                AnimatedBuilder(
+                                  animation: _levitateAnim,
+                                  builder: (context, child) {
+                                    return Transform.translate(
+                                      offset: Offset(0, _levitateAnim.value),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(22),
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          gradient: AppColors.saffronGradient,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: AppColors.primarySaffron.withValues(alpha: 0.45),
+                                              blurRadius: 24,
+                                              spreadRadius: 3,
+                                              offset: Offset(-_tiltY * 15, _tiltX * 15 + 6),
+                                            ),
+                                          ],
+                                        ),
+                                        child: const Text('🚩', style: TextStyle(fontSize: 48)),
+                                      ),
+                                    );
+                                  },
+                                ),
 
-                      const SizedBox(height: 16),
+                                const SizedBox(height: 18),
 
-                      Text(
-                        'Daivik',
-                        style: theme.textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 28,
-                          color: AppColors.primarySaffronDark,
+                                // 3D Sculpted Text Title
+                                Text(
+                                  'Daivik',
+                                  style: theme.textTheme.headlineMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 32,
+                                    color: AppColors.primarySaffronDark,
+                                    letterSpacing: 0.6,
+                                    shadows: [
+                                      Shadow(
+                                        color: AppColors.primarySaffron.withValues(alpha: 0.5),
+                                        blurRadius: 14,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Experience Divine Peace & Daily Bhakti',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.75),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Experience Divine Peace & Daily Bhakti',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
-                          fontSize: 13,
-                        ),
-                        textAlign: TextAlign.center,
                       ),
 
                       // Spacer pushing login methods to bottom
                       const Spacer(flex: 2),
 
-                      // BOTTOM SECTION: Login Methods stuck to bottom
+                      // ==============================================================
+                      // CLEAN 2D BOTTOM SECTION: LOGIN METHODS (PINNED TO BOTTOM)
+                      // ==============================================================
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
