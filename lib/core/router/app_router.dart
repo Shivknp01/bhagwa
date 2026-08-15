@@ -11,6 +11,7 @@ import '../../features/home/home_screen.dart';
 import '../../features/horoscope/horoscope_screen.dart';
 import '../../features/navigation/main_shell_scaffold.dart';
 import '../../features/notifications/notification_settings_screen.dart';
+import '../../features/notifications/notifications_center_screen.dart';
 import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../features/reader/mantra_reader_screen.dart';
@@ -133,6 +134,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       GoRoute(
         path: '/notifications',
+        builder: (context, state) => const NotificationsCenterScreen(),
+      ),
+
+      GoRoute(
+        path: '/notifications/settings',
         builder: (context, state) => const NotificationSettingsScreen(),
       ),
     ],

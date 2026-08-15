@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "100335575609",
+    "project_id": "bhagwa-prod",
+    "storage_bucket": "bhagwa-prod.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:100335575609:android:611ad00217d1a430c9e3e8",
+        "android_client_info": {
+          "package_name": "app.d41v1k"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "100335575609-h7ud50l3v8stbdbgu0go8q67gft41qn9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAocEbuLJNldit1u6Y4O-48XXvHcUz8B80"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "100335575609-h7ud50l3v8stbdbgu0go8q67gft41qn9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
