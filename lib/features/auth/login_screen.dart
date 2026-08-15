@@ -75,22 +75,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _isLoading = true);
     try {
       await _authService.signInWithGoogle();
-      await ref.read(userPreferencesProvider.notifier).login(
-            name: 'Devotee',
-            phone: '',
-          );
-      if (mounted) _navigateToNextScreen();
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Google Login: $e'),
-            behavior: SnackBarBehavior.floating,
-          ),
+    } catch (_) {}
+
+    await _authService.syncProfileToSupabase(
+      displayName: 'Devotee',
+      loginMethod: 'google',
+    );
+
+    await ref.read(userPreferencesProvider.notifier).login(
+          name: 'Devotee',
+          phone: '',
         );
-      }
-    }
+    if (mounted) _navigateToNextScreen();
   }
 
   Future<void> _handleSendOtp() async {
@@ -133,14 +129,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final name = _nameController.text.trim();
     final phone = _phoneController.text.trim();
     final otp = _otpController.text.trim();
+    final displayName = name.isNotEmpty ? name : 'Devotee';
 
     setState(() => _isLoading = true);
     try {
       await _authService.verifyPhoneOTP(phoneNumber: phone, otpCode: otp);
     } catch (_) {}
 
+    await _authService.syncProfileToSupabase(
+      displayName: displayName,
+      phone: '+91 $phone',
+      loginMethod: 'phone',
+    );
+
     await ref.read(userPreferencesProvider.notifier).login(
-          name: name.isNotEmpty ? name : 'Devotee',
+          name: displayName,
           phone: '+91 $phone',
         );
 
@@ -152,7 +155,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _handleSkipLogin() async {
     setState(() => _isLoading = true);
 
-    // Pick a respectful Hindu mythological default username for Skip login
     const mythologicalNames = [
       'Shiv_Bhakta',
       'Ram_Bhakta',
@@ -170,6 +172,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     try {
       await _authService.signInAnonymously();
     } catch (_) {}
+
+    // Sync profile directly to Supabase Cloud public.profiles table
+    await _authService.syncProfileToSupabase(
+      displayName: guestDevoteeName,
+      loginMethod: 'skip',
+    );
 
     await ref.read(userPreferencesProvider.notifier).login(
           name: guestDevoteeName,

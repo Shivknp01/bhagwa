@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/language_toggle_button.dart';
+import '../../services/auth_service.dart';
 import '../../services/storage_service.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -12,6 +13,7 @@ class ProfileScreen extends ConsumerWidget {
     final prefs = ref.read(userPreferencesProvider);
     final notifier = ref.read(userPreferencesProvider.notifier);
     final nameController = TextEditingController(text: prefs.userName);
+    final authService = AuthService();
 
     showDialog(
       context: context,
@@ -50,19 +52,28 @@ class ProfileScreen extends ConsumerWidget {
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 final newName = nameController.text.trim();
                 if (newName.isNotEmpty) {
-                  notifier.login(name: newName, phone: prefs.userPhone, email: prefs.userEmail);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Devotee profile name updated to "$newName" 🚩'),
-                      backgroundColor: AppColors.primarySaffron,
-                      behavior: SnackBarBehavior.floating,
-                    ),
+                  await notifier.login(name: newName, phone: prefs.userPhone, email: prefs.userEmail);
+                  await authService.syncProfileToSupabase(
+                    displayName: newName,
+                    phone: prefs.userPhone,
+                    email: prefs.userEmail,
                   );
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Devotee profile name updated to "$newName" 🚩'),
+                        backgroundColor: AppColors.primarySaffron,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
                 }
-                Navigator.pop(context);
+                if (context.mounted) {
+                  Navigator.pop(context);
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primarySaffron,

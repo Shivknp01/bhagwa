@@ -32,6 +32,42 @@ class AuthService {
   User? get currentUser => _client.auth.currentUser;
   bool get isAuthenticated => _client.auth.currentSession != null;
 
+  /// Sync user profile directly to Supabase Cloud public.profiles table
+  Future<void> syncProfileToSupabase({
+    required String displayName,
+    String? phone,
+    String? email,
+    String loginMethod = 'skip',
+  }) async {
+    try {
+      final userId = currentUser?.id;
+      final payload = <String, dynamic>{
+        'display_name': displayName,
+        'login_method': loginMethod,
+        'is_anonymous': loginMethod == 'skip',
+        'last_active_at': DateTime.now().toIso8601String(),
+      };
+
+      if (userId != null) {
+        payload['auth_user_id'] = userId;
+      }
+      if (phone != null && phone.isNotEmpty) {
+        payload['phone_number'] = phone;
+      }
+      if (email != null && email.isNotEmpty) {
+        payload['email'] = email;
+      }
+
+      if (userId != null) {
+        await _client.from('profiles').upsert(payload, onConflict: 'auth_user_id');
+      } else {
+        await _client.from('profiles').insert(payload);
+      }
+    } catch (e) {
+      debugPrint('Error syncing profile to Supabase: $e');
+    }
+  }
+
   /// Fetch dynamic auth configuration from Supabase app_settings
   Future<AuthSettings> fetchAuthSettings() async {
     try {
@@ -133,13 +169,13 @@ class AuthService {
   }
 
   /// Skip Login (Anonymous Guest Authentication)
-  Future<AuthResponse> signInAnonymously() async {
+  Future<AuthResponse?> signInAnonymously() async {
     try {
       final response = await _client.auth.signInAnonymously();
       return response;
     } catch (e) {
-      debugPrint('Error in signInAnonymously: $e');
-      rethrow;
+      debugPrint('Notice in signInAnonymously: $e');
+      return null;
     }
   }
 
