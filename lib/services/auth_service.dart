@@ -12,6 +12,18 @@ class AuthSettings {
     this.phoneEnabled = true,
     this.skipEnabled = true,
   });
+
+  AuthSettings copyWith({
+    bool? googleEnabled,
+    bool? phoneEnabled,
+    bool? skipEnabled,
+  }) {
+    return AuthSettings(
+      googleEnabled: googleEnabled ?? this.googleEnabled,
+      phoneEnabled: phoneEnabled ?? this.phoneEnabled,
+      skipEnabled: skipEnabled ?? this.skipEnabled,
+    );
+  }
 }
 
 class AuthService {
@@ -25,8 +37,7 @@ class AuthService {
     try {
       final response = await _client
           .from('app_settings')
-          .select('setting_key, setting_value')
-          .like('setting_key', 'auth.%');
+          .select('setting_key, setting_value');
 
       bool google = true;
       bool phone = true;
@@ -34,7 +45,8 @@ class AuthService {
 
       for (final row in response as List) {
         final key = row['setting_key'] as String;
-        final val = row['setting_value'] == true || row['setting_value'] == 'true';
+        final rawVal = row['setting_value'];
+        final bool val = rawVal == true || rawVal == 'true';
         if (key == 'auth.google_enabled') google = val;
         if (key == 'auth.phone_enabled') phone = val;
         if (key == 'auth.skip_enabled') skip = val;
@@ -46,9 +58,27 @@ class AuthService {
         skipEnabled: skip,
       );
     } catch (e) {
-      debugPrint('AuthService fetchAuthSettings error (using defaults): $e');
+      debugPrint('AuthService fetchAuthSettings error: $e');
       return const AuthSettings();
     }
+  }
+
+  /// Subscribe to Realtime app_settings updates for instant 0ms UI toggling
+  RealtimeChannel subscribeToRealtimeAuthSettings({
+    required Function(AuthSettings updatedSettings) onSettingsChanged,
+  }) {
+    final channel = _client.channel('public:app_settings');
+    channel.onPostgresChanges(
+      event: PostgresChangeEvent.all,
+      schema: 'public',
+      table: 'app_settings',
+      callback: (payload) async {
+        final newSettings = await fetchAuthSettings();
+        onSettingsChanged(newSettings);
+      },
+    ).subscribe();
+
+    return channel;
   }
 
   /// Sign in with Google OAuth

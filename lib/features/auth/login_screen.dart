@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/language_toggle_button.dart';
 import '../../services/auth_service.dart';
@@ -15,6 +16,7 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final AuthService _authService = AuthService();
+  RealtimeChannel? _realtimeChannel;
 
   final TextEditingController _nameController = TextEditingController(text: 'Aditya Sharma');
   final TextEditingController _phoneController = TextEditingController(text: '9876543210');
@@ -28,20 +30,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    _loadAuthSettings();
+    _initAuthSettingsAndRealtime();
   }
 
-  Future<void> _loadAuthSettings() async {
+  Future<void> _initAuthSettingsAndRealtime() async {
+    // Initial fetch
     final settings = await _authService.fetchAuthSettings();
     if (mounted) {
       setState(() {
         _authSettings = settings;
       });
     }
+
+    // Subscribe to Supabase Realtime channel for live updates when admin toggles switches
+    _realtimeChannel = _authService.subscribeToRealtimeAuthSettings(
+      onSettingsChanged: (updatedSettings) {
+        if (mounted) {
+          setState(() {
+            _authSettings = updatedSettings;
+          });
+        }
+      },
+    );
   }
 
   @override
   void dispose() {
+    _realtimeChannel?.unsubscribe();
     _nameController.dispose();
     _phoneController.dispose();
     _otpController.dispose();
