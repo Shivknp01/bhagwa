@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'meta_analytics_service.dart';
+import 'marketing_event_service.dart';
 
 class UserPreferences {
   final bool isLoggedIn;
@@ -189,18 +189,17 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
     state = state.copyWith(festivalNotif: !state.festivalNotif);
   }
 
-  Future<void> recordPayment({required double amount, String currency = 'INR'}) async {
+  Future<void> recordPayment({required String transactionId, required double amount, String currency = 'INR'}) async {
     final newCount = state.paymentCount + 1;
     state = state.copyWith(paymentCount: newCount);
     await _prefs?.setInt('payment_count', newCount);
 
-    // Trigger Meta Marketing Events
-    MetaAnalyticsService.logPurchase(amount: amount, currency: currency);
-    if (newCount == 1) {
-      MetaAnalyticsService.logFirstPay(amount: amount, currency: currency);
-    } else if (newCount == 2) {
-      MetaAnalyticsService.logSecondPay(amount: amount, currency: currency);
-    }
+    // Trigger Central Marketing Event Service
+    await MarketingEventService.trackVerifiedPaymentSuccess(
+      transactionId: transactionId,
+      amount: amount,
+      currency: currency,
+    );
   }
 }
 

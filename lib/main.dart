@@ -6,13 +6,13 @@ import 'core/theme/app_theme.dart';
 import 'core/supabase/supabase_client.dart';
 import 'services/storage_service.dart';
 
-import 'services/meta_analytics_service.dart';
+import 'services/marketing_event_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize Meta Analytics SDK Install event
-  MetaAnalyticsService.logInstall();
+  // Initialize Marketing Event Service install tracking
+  MarketingEventService.trackInstall();
 
   // Initialize Supabase once at app startup
   try {
