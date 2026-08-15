@@ -63,6 +63,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
+  void _navigateToNextScreen() {
+    final prefs = ref.read(userPreferencesProvider);
+    if (!prefs.onboardingCompleted) {
+      context.go('/onboarding');
+    } else {
+      context.go('/home');
+    }
+  }
+
   Future<void> _handleGoogleLogin() async {
     setState(() => _isLoading = true);
     try {
@@ -71,7 +80,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             name: 'Devotee',
             phone: '',
           );
-      if (mounted) context.go('/home');
+      if (mounted) _navigateToNextScreen();
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -138,7 +147,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         );
 
     if (mounted) {
-      context.go('/home');
+      _navigateToNextScreen();
     }
   }
 
@@ -154,7 +163,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         );
 
     if (mounted) {
-      context.go('/home');
+      _navigateToNextScreen();
     }
   }
 

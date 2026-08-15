@@ -20,33 +20,34 @@ import '../../services/storage_service.dart';
 final appRouterProvider = Provider<GoRouter>((ref) {
   final prefs = ref.watch(userPreferencesProvider);
 
+  // Flow: Login Screen FIRST -> Onboarding Pages -> 3 Main Pages (Home, Explore, Profile)
   String initialPath = '/home';
-  if (!prefs.onboardingCompleted) {
-    initialPath = '/onboarding';
-  } else if (!prefs.isLoggedIn) {
+  if (!prefs.isLoggedIn) {
     initialPath = '/login';
+  } else if (!prefs.onboardingCompleted) {
+    initialPath = '/onboarding';
   }
 
   return GoRouter(
     initialLocation: initialPath,
     routes: [
       GoRoute(
-        path: '/onboarding',
-        builder: (context, state) => const OnboardingScreen(),
-      ),
-
-      GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
       ),
 
-      // Stateful Shell Route for Bottom Nav Tabs
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingScreen(),
+      ),
+
+      // Stateful Shell Route for 3 Main Pages (Home, Explore, Profile)
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainShellScaffold(navigationShell: navigationShell);
         },
         branches: [
-          // Branch 0: Home
+          // Page 1: Home
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -56,7 +57,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
-          // Branch 1: Explore
+          // Page 2: Explore
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -66,7 +67,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
-          // Branch 2: Profile
+          // Page 3: Profile
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -78,7 +79,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
 
-      // Category Detail Route (e.g. /category/Wallpaper, /category/Bhajan)
+      // Category Detail Route
       GoRoute(
         path: '/category/:name',
         builder: (context, state) {
