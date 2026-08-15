@@ -75,19 +75,34 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _isLoading = true);
     try {
       await _authService.signInWithGoogle();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('Google Auth Notice: $e');
+    }
 
-    final assignedId = await _authService.syncProfileToSupabase(
-      displayName: 'Devotee',
-      loginMethod: 'google',
-    );
+    try {
+      final assignedId = await _authService.syncProfileToSupabase(
+        displayName: 'Devotee',
+        loginMethod: 'google',
+      );
 
-    await ref.read(userPreferencesProvider.notifier).login(
-          name: 'Devotee',
-          phone: '',
-          bhagwaUserId: assignedId,
+      await ref.read(userPreferencesProvider.notifier).login(
+            name: 'Devotee',
+            phone: '',
+            bhagwaUserId: assignedId,
+          );
+      if (mounted) _navigateToNextScreen();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Google Sign-In notice: $e'),
+            behavior: SnackBarBehavior.floating,
+          ),
         );
-    if (mounted) _navigateToNextScreen();
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _handleSendOtp() async {
