@@ -19,11 +19,16 @@ class ProfileScreen extends ConsumerWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: const Row(
             children: [
               Text('🚩 ', style: TextStyle(fontSize: 20)),
-              Text('Edit Devotional Profile', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              Text(
+                'Edit Devotional Profile',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
             ],
           ),
           content: Column(
@@ -39,9 +44,17 @@ class ProfileScreen extends ConsumerWidget {
                 controller: nameController,
                 decoration: InputDecoration(
                   hintText: 'e.g. Shiv_Bhakta_108 or Aditya Sharma',
-                  prefixIcon: const Icon(Icons.person_outline_rounded, color: AppColors.primarySaffron),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                  prefixIcon: const Icon(
+                    Icons.person_outline_rounded,
+                    color: AppColors.primarySaffron,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
               ),
             ],
@@ -69,7 +82,9 @@ class ProfileScreen extends ConsumerWidget {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Devotee profile name updated to "$newName" 🚩'),
+                        content: Text(
+                          'Devotee profile name updated to "$newName" 🚩',
+                        ),
                         backgroundColor: AppColors.primarySaffron,
                         behavior: SnackBarBehavior.floating,
                       ),
@@ -83,9 +98,14 @@ class ProfileScreen extends ConsumerWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primarySaffron,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-              child: const Text('Save Changes', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Save Changes',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         );
@@ -105,10 +125,7 @@ class ProfileScreen extends ConsumerWidget {
           'My Devotional Profile 🚩',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        actions: const [
-          LanguageToggleButton(),
-          SizedBox(width: 8),
-        ],
+        actions: const [LanguageToggleButton(), SizedBox(width: 8)],
       ),
       body: SafeArea(
         child: ListView(
@@ -127,14 +144,26 @@ class ProfileScreen extends ConsumerWidget {
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: AppColors.primarySaffron.withValues(alpha: 0.3)),
+                border: Border.all(
+                  color: AppColors.primarySaffron.withValues(alpha: 0.3),
+                ),
               ),
               child: Row(
                 children: [
-                  const CircleAvatar(
-                    radius: 34,
-                    backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=68'),
-                    backgroundColor: AppColors.primarySaffron,
+                  Container(
+                    width: 68,
+                    height: 68,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                      border: Border.all(color: AppColors.primarySaffron, width: 2),
+                    ),
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/images/daivik_logo.png',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -150,14 +179,23 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 6),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
-                            color: AppColors.primarySaffron.withValues(alpha: 0.2),
+                            color: AppColors.primarySaffron.withValues(
+                              alpha: 0.2,
+                            ),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: AppColors.primarySaffron.withValues(alpha: 0.4)),
+                            border: Border.all(
+                              color: AppColors.primarySaffron.withValues(
+                                alpha: 0.4,
+                              ),
+                            ),
                           ),
                           child: Text(
-                            'Bhagwa ID: #${prefs.bhagwaUserId}',
+                            'User ID: #${prefs.bhagwaUserId}',
                             style: TextStyle(
                               fontSize: 12,
                               color: AppColors.primarySaffronDark,
@@ -167,10 +205,13 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          prefs.userPhone.isNotEmpty ? prefs.userPhone : 'Guest Devotee 🔱',
+                          prefs.userPhone.isNotEmpty
+                              ? prefs.userPhone
+                              : 'Guest Devotee 🔱',
                           style: TextStyle(
                             fontSize: 12,
-                            color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                            color: theme.textTheme.bodyMedium?.color
+                                ?.withValues(alpha: 0.7),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -179,7 +220,10 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                   IconButton(
                     onPressed: () => _showEditProfileDialog(context, ref),
-                    icon: const Icon(Icons.edit_rounded, color: AppColors.primarySaffron),
+                    icon: const Icon(
+                      Icons.edit_rounded,
+                      color: AppColors.primarySaffron,
+                    ),
                     tooltip: 'Edit Profile Name',
                   ),
                 ],
@@ -191,7 +235,9 @@ class ProfileScreen extends ConsumerWidget {
             // Quick Collections Grid
             Text(
               'My Library',
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 12),
             GridView.count(
@@ -238,7 +284,9 @@ class ProfileScreen extends ConsumerWidget {
             // App Settings Section
             Text(
               'Account & App Settings',
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 12),
 
@@ -268,10 +316,15 @@ class ProfileScreen extends ConsumerWidget {
               ),
               child: SwitchListTile(
                 secondary: Icon(
-                  prefs.isDarkMode ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                  prefs.isDarkMode
+                      ? Icons.dark_mode_rounded
+                      : Icons.light_mode_rounded,
                   color: AppColors.primarySaffron,
                 ),
-                title: const Text('Dark Theme', style: TextStyle(fontWeight: FontWeight.w600)),
+                title: const Text(
+                  'Dark Theme',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
                 value: prefs.isDarkMode,
                 activeTrackColor: AppColors.primarySaffron,
                 onChanged: (_) => notifier.toggleDarkMode(),
@@ -325,7 +378,9 @@ class ProfileScreen extends ConsumerWidget {
                   context: context,
                   builder: (context) => AlertDialog(
                     title: const Text('Logout Session?'),
-                    content: const Text('Are you sure you want to log out of Daivik?'),
+                    content: const Text(
+                      'Are you sure you want to log out of Daivik?',
+                    ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context, false),
@@ -333,8 +388,13 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                       ElevatedButton(
                         onPressed: () => Navigator.pop(context, true),
-                        style: ElevatedButton.styleFrom(backgroundColor: AppColors.sacredRed),
-                        child: const Text('Logout', style: TextStyle(color: Colors.white)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.sacredRed,
+                        ),
+                        child: const Text(
+                          'Logout',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                     ],
                   ),
@@ -353,7 +413,10 @@ class ProfileScreen extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
-                  side: const BorderSide(color: AppColors.sacredRed, width: 1.2),
+                  side: const BorderSide(
+                    color: AppColors.sacredRed,
+                    width: 1.2,
+                  ),
                 ),
                 elevation: 0,
               ),
@@ -427,8 +490,13 @@ class ProfileScreen extends ConsumerWidget {
       ),
       child: ListTile(
         leading: Icon(icon, color: AppColors.primarySaffron),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-        subtitle: subtitle != null ? Text(subtitle, style: const TextStyle(fontSize: 12)) : null,
+        title: Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+        ),
+        subtitle: subtitle != null
+            ? Text(subtitle, style: const TextStyle(fontSize: 12))
+            : null,
         trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
         onTap: onTap,
       ),

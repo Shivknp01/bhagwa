@@ -520,50 +520,26 @@ class _AstroZodiacMandalaWheelState extends State<AstroZodiacMandalaWheel>
                 ),
               ),
 
-              // 2. Center Sun Rays & Radiant Core Emblem (Matching Reference Image)
+              // 2. Center Official Daivik Sun & Om Logo Core
               Container(
-                width: 76,
-                height: 76,
+                width: 90,
+                height: 90,
+                padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primarySaffron.withValues(alpha: 0.35),
-                      blurRadius: 20,
-                      spreadRadius: 4,
+                      color: AppColors.primarySaffron.withValues(alpha: 0.4),
+                      blurRadius: 24,
+                      spreadRadius: 6,
                     ),
                   ],
                 ),
-                child: Center(
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Sun Rays Pulse
-                      Transform.rotate(
-                        angle: -rotationAngle * 0.5,
-                        child: Icon(
-                          Icons.wb_sunny_rounded,
-                          size: 54,
-                          color: AppColors.amberGold.withValues(alpha: 0.8),
-                        ),
-                      ),
-                      // Inner Crescent Moon & Star
-                      Container(
-                        width: 38,
-                        height: 38,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Color(0xFF4A148C), // Deep Cosmic Purple
-                        ),
-                        child: const Center(
-                          child: Text(
-                            '🌙',
-                            style: TextStyle(fontSize: 18),
-                          ),
-                        ),
-                      ),
-                    ],
+                child: ClipOval(
+                  child: Image.asset(
+                    'assets/images/daivik_logo.png',
+                    fit: BoxFit.contain,
                   ),
                 ),
               ),
