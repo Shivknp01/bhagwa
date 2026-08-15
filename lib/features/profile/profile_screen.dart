@@ -55,11 +55,16 @@ class ProfileScreen extends ConsumerWidget {
               onPressed: () async {
                 final newName = nameController.text.trim();
                 if (newName.isNotEmpty) {
-                  await notifier.login(name: newName, phone: prefs.userPhone, email: prefs.userEmail);
-                  await authService.syncProfileToSupabase(
+                  final assignedId = await authService.syncProfileToSupabase(
                     displayName: newName,
                     phone: prefs.userPhone,
                     email: prefs.userEmail,
+                  );
+                  await notifier.login(
+                    name: newName,
+                    phone: prefs.userPhone,
+                    email: prefs.userEmail,
+                    bhagwaUserId: assignedId,
                   );
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -143,13 +148,30 @@ class ProfileScreen extends ConsumerWidget {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.primarySaffron.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppColors.primarySaffron.withValues(alpha: 0.4)),
+                          ),
+                          child: Text(
+                            'Bhagwa ID: #${prefs.bhagwaUserId}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.primarySaffronDark,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
                         Text(
-                          prefs.userPhone.isNotEmpty ? '${prefs.userPhone} • Devotee 🔱' : 'Guest Devotee 🔱',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: AppColors.primarySaffronDark,
-                            fontWeight: FontWeight.w600,
+                          prefs.userPhone.isNotEmpty ? prefs.userPhone : 'Guest Devotee 🔱',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
@@ -215,10 +237,19 @@ class ProfileScreen extends ConsumerWidget {
 
             // App Settings Section
             Text(
-              'App Settings',
+              'Account & App Settings',
               style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
+
+            _buildSettingTile(
+              context,
+              icon: Icons.badge_rounded,
+              title: 'Bhagwa Devotee User ID (#${prefs.bhagwaUserId})',
+              subtitle: 'Unique numeric user identity assigned server-side',
+              onTap: () {},
+            ),
+            const SizedBox(height: 10),
 
             _buildSettingTile(
               context,
@@ -384,6 +415,7 @@ class ProfileScreen extends ConsumerWidget {
     BuildContext context, {
     required IconData icon,
     required String title,
+    String? subtitle,
     required VoidCallback onTap,
   }) {
     final theme = Theme.of(context);
@@ -396,6 +428,7 @@ class ProfileScreen extends ConsumerWidget {
       child: ListTile(
         leading: Icon(icon, color: AppColors.primarySaffron),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+        subtitle: subtitle != null ? Text(subtitle, style: const TextStyle(fontSize: 12)) : null,
         trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
         onTap: onTap,
       ),

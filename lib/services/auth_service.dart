@@ -32,8 +32,8 @@ class AuthService {
   User? get currentUser => _client.auth.currentUser;
   bool get isAuthenticated => _client.auth.currentSession != null;
 
-  /// Sync user profile directly to Supabase Cloud public.profiles table
-  Future<void> syncProfileToSupabase({
+  /// Sync user profile directly to Supabase Cloud public.profiles table and return assigned numeric user_id
+  Future<String?> syncProfileToSupabase({
     required String displayName,
     String? phone,
     String? email,
@@ -58,14 +58,20 @@ class AuthService {
         payload['email'] = email;
       }
 
+      dynamic res;
       if (userId != null) {
-        await _client.from('profiles').upsert(payload, onConflict: 'auth_user_id');
+        res = await _client.from('profiles').upsert(payload, onConflict: 'auth_user_id').select('user_id').maybeSingle();
       } else {
-        await _client.from('profiles').insert(payload);
+        res = await _client.from('profiles').insert(payload).select('user_id').maybeSingle();
+      }
+
+      if (res != null && res['user_id'] != null) {
+        return res['user_id'].toString();
       }
     } catch (e) {
       debugPrint('Error syncing profile to Supabase: $e');
     }
+    return null;
   }
 
   /// Fetch dynamic auth configuration from Supabase app_settings

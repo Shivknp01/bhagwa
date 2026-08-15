@@ -6,6 +6,7 @@ class UserPreferences {
   final bool onboardingCompleted;
   final String appLanguage; // 'en' for English (default), 'hi' for Hindi
   final String userName;
+  final String bhagwaUserId; // e.g. '101'
   final String userPhone;
   final String userEmail;
   final bool isDarkMode;
@@ -21,6 +22,7 @@ class UserPreferences {
     this.onboardingCompleted = false,
     this.appLanguage = 'en',
     this.userName = 'Aditya Sharma',
+    this.bhagwaUserId = '101',
     this.userPhone = '+91 98765 43210',
     this.userEmail = 'aditya@example.com',
     this.isDarkMode = false,
@@ -37,6 +39,7 @@ class UserPreferences {
     bool? onboardingCompleted,
     String? appLanguage,
     String? userName,
+    String? bhagwaUserId,
     String? userPhone,
     String? userEmail,
     bool? isDarkMode,
@@ -52,6 +55,7 @@ class UserPreferences {
       onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
       appLanguage: appLanguage ?? this.appLanguage,
       userName: userName ?? this.userName,
+      bhagwaUserId: bhagwaUserId ?? this.bhagwaUserId,
       userPhone: userPhone ?? this.userPhone,
       userEmail: userEmail ?? this.userEmail,
       isDarkMode: isDarkMode ?? this.isDarkMode,
@@ -78,6 +82,7 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
     final onboardingCompleted = _prefs?.getBool('onboarding_completed') ?? false;
     final appLanguage = _prefs?.getString('app_language') ?? 'en';
     final userName = _prefs?.getString('user_name') ?? 'Aditya Sharma';
+    final bhagwaUserId = _prefs?.getString('bhagwa_user_id') ?? '101';
     final userPhone = _prefs?.getString('user_phone') ?? '+91 98765 43210';
     final userEmail = _prefs?.getString('user_email') ?? 'aditya@example.com';
     final isDarkMode = _prefs?.getBool('is_dark_mode') ?? false;
@@ -89,6 +94,7 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
       onboardingCompleted: onboardingCompleted,
       appLanguage: appLanguage,
       userName: userName,
+      bhagwaUserId: bhagwaUserId,
       userPhone: userPhone,
       userEmail: userEmail,
       isDarkMode: isDarkMode,
@@ -107,19 +113,33 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
     await setLanguage(nextLang);
   }
 
-  Future<void> login({required String name, required String phone, String? email}) async {
+  Future<void> login({
+    required String name,
+    required String phone,
+    String? email,
+    String? bhagwaUserId,
+  }) async {
     final finalEmail = email?.isNotEmpty == true ? email! : '$phone@bhakti.app';
+    final finalUserId = bhagwaUserId ?? state.bhagwaUserId;
+
     state = state.copyWith(
       isLoggedIn: true,
       userName: name.isNotEmpty ? name : 'Devotee User',
+      bhagwaUserId: finalUserId,
       userPhone: phone,
       userEmail: finalEmail,
     );
 
     await _prefs?.setBool('is_logged_in', true);
     await _prefs?.setString('user_name', state.userName);
+    await _prefs?.setString('bhagwa_user_id', state.bhagwaUserId);
     await _prefs?.setString('user_phone', state.userPhone);
     await _prefs?.setString('user_email', state.userEmail);
+  }
+
+  Future<void> updateBhagwaUserId(String numericId) async {
+    state = state.copyWith(bhagwaUserId: numericId);
+    await _prefs?.setString('bhagwa_user_id', numericId);
   }
 
   Future<void> logout() async {

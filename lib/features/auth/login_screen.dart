@@ -77,7 +77,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await _authService.signInWithGoogle();
     } catch (_) {}
 
-    await _authService.syncProfileToSupabase(
+    final assignedId = await _authService.syncProfileToSupabase(
       displayName: 'Devotee',
       loginMethod: 'google',
     );
@@ -85,6 +85,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     await ref.read(userPreferencesProvider.notifier).login(
           name: 'Devotee',
           phone: '',
+          bhagwaUserId: assignedId,
         );
     if (mounted) _navigateToNextScreen();
   }
@@ -136,7 +137,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await _authService.verifyPhoneOTP(phoneNumber: phone, otpCode: otp);
     } catch (_) {}
 
-    await _authService.syncProfileToSupabase(
+    final assignedId = await _authService.syncProfileToSupabase(
       displayName: displayName,
       phone: '+91 $phone',
       loginMethod: 'phone',
@@ -145,6 +146,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     await ref.read(userPreferencesProvider.notifier).login(
           name: displayName,
           phone: '+91 $phone',
+          bhagwaUserId: assignedId,
         );
 
     if (mounted) {
@@ -173,8 +175,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await _authService.signInAnonymously();
     } catch (_) {}
 
-    // Sync profile directly to Supabase Cloud public.profiles table
-    await _authService.syncProfileToSupabase(
+    final assignedId = await _authService.syncProfileToSupabase(
       displayName: guestDevoteeName,
       loginMethod: 'skip',
     );
@@ -182,6 +183,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     await ref.read(userPreferencesProvider.notifier).login(
           name: guestDevoteeName,
           phone: '',
+          bhagwaUserId: assignedId,
         );
 
     if (mounted) {
