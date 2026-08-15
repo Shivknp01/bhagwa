@@ -197,247 +197,267 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Top Bar with Language Toggle
-              const Align(
-                alignment: Alignment.centerRight,
-                child: LanguageToggleButton(),
-              ),
-              const SizedBox(height: 12),
-
-              // Header Logo & Branding (Compact & Sleek)
-              Center(
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: AppColors.saffronGradient,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primarySaffron.withValues(alpha: 0.25),
-                        blurRadius: 16,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: const Text('🚩', style: TextStyle(fontSize: 36)),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight - 32.0,
                 ),
-              ),
-
-              const SizedBox(height: 14),
-
-              Text(
-                'Daivik',
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 26,
-                  color: AppColors.primarySaffronDark,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Experience Divine Peace & Daily Bhakti',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
-                  fontSize: 13,
-                ),
-                textAlign: TextAlign.center,
-              ),
-
-              const SizedBox(height: 24),
-
-              // 1. GOOGLE LOGIN BUTTON (Compact & Separate)
-              if (_authSettings.googleEnabled) ...[
-                ElevatedButton.icon(
-                  onPressed: _isLoading ? null : _handleGoogleLogin,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.colorScheme.surface,
-                    foregroundColor: theme.textTheme.bodyLarge?.color,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      side: BorderSide(color: theme.dividerColor, width: 1),
-                    ),
-                    elevation: 0.5,
-                  ),
-                  icon: Image.network(
-                    'https://authjs.dev/img/providers/google.svg',
-                    height: 20,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const Icon(Icons.g_mobiledata_rounded, color: Colors.red, size: 24),
-                  ),
-                  label: const Text(
-                    'Continue with Google',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                const SizedBox(height: 14),
-              ],
-
-              // 2. PHONE OTP LOGIN FORM (Compact & Separate Card)
-              if (_authSettings.phoneEnabled) ...[
-                Container(
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: AppColors.primarySaffron.withValues(alpha: 0.25),
-                      width: 1,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.03),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
+                child: IntrinsicHeight(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(
-                        'Mobile Number',
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
+                      // Top Bar with Language Toggle
+                      const Align(
+                        alignment: Alignment.centerRight,
+                        child: LanguageToggleButton(),
+                      ),
+
+                      // Flexible top space to position branding nicely
+                      const Spacer(flex: 1),
+
+                      // Header Logo & Branding
+                      Center(
+                        child: Container(
+                          padding: const EdgeInsets.all(18),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: AppColors.saffronGradient,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primarySaffron.withValues(alpha: 0.25),
+                                blurRadius: 18,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: const Text('🚩', style: TextStyle(fontSize: 42)),
                         ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      Text(
+                        'Daivik',
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 28,
+                          color: AppColors.primarySaffronDark,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 6),
-                      TextField(
-                        controller: _phoneController,
-                        keyboardType: TextInputType.phone,
-                        style: const TextStyle(fontSize: 14),
-                        decoration: InputDecoration(
-                          hintText: 'Enter 10-digit phone number',
-                          hintStyle: const TextStyle(fontSize: 13),
-                          prefixIcon: const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-                            child: Text(
-                              '🇮🇳 +91',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                            ),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          filled: true,
-                          fillColor: theme.colorScheme.surface,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: theme.dividerColor),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: theme.dividerColor),
-                          ),
+                      Text(
+                        'Experience Divine Peace & Daily Bhakti',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                          fontSize: 13,
                         ),
+                        textAlign: TextAlign.center,
                       ),
 
-                      if (_isOtpSent) ...[
-                        const SizedBox(height: 12),
-                        Text(
-                          'Verification Code (OTP)',
-                          style: theme.textTheme.labelMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        TextField(
-                          controller: _otpController,
-                          keyboardType: TextInputType.number,
-                          maxLength: 6,
-                          style: const TextStyle(fontSize: 14),
-                          decoration: InputDecoration(
-                            hintText: 'Enter 6-digit OTP',
-                            hintStyle: const TextStyle(fontSize: 13),
-                            prefixIcon: const Icon(Icons.lock_clock_rounded, color: AppColors.primarySaffron, size: 20),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                            filled: true,
-                            fillColor: theme.colorScheme.surface,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: theme.dividerColor),
-                            ),
-                          ),
-                        ),
-                      ],
+                      // Spacer pushing login methods to bottom
+                      const Spacer(flex: 2),
 
-                      const SizedBox(height: 14),
-
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _isLoading
-                              ? null
-                              : (_isOtpSent ? _handleVerifyAndLogin : _handleSendOtp),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primarySaffron,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            elevation: 1,
-                          ),
-                          child: _isLoading
-                              ? const SizedBox(
-                                  height: 18,
-                                  width: 18,
-                                  child: CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : Text(
-                                  _isOtpSent ? 'Verify & Login 🚩' : 'Get Phone OTP & Login',
-                                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                      // BOTTOM SECTION: Login Methods stuck to bottom
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // 1. GOOGLE LOGIN BUTTON
+                          if (_authSettings.googleEnabled) ...[
+                            ElevatedButton.icon(
+                              onPressed: _isLoading ? null : _handleGoogleLogin,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: theme.colorScheme.surface,
+                                foregroundColor: theme.textTheme.bodyLarge?.color,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  side: BorderSide(color: theme.dividerColor, width: 1),
                                 ),
-                        ),
+                                elevation: 0.5,
+                              ),
+                              icon: Image.network(
+                                'https://authjs.dev/img/providers/google.svg',
+                                height: 20,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(Icons.g_mobiledata_rounded, color: Colors.red, size: 24),
+                              ),
+                              label: const Text(
+                                'Continue with Google',
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                          ],
+
+                          // 2. PHONE OTP LOGIN FORM
+                          if (_authSettings.phoneEnabled) ...[
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.surface,
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(
+                                  color: AppColors.primarySaffron.withValues(alpha: 0.25),
+                                  width: 1,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.03),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Mobile Number',
+                                    style: theme.textTheme.labelMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  TextField(
+                                    controller: _phoneController,
+                                    keyboardType: TextInputType.phone,
+                                    style: const TextStyle(fontSize: 14),
+                                    decoration: InputDecoration(
+                                      hintText: 'Enter 10-digit phone number',
+                                      hintStyle: const TextStyle(fontSize: 13),
+                                      prefixIcon: const Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                                        child: Text(
+                                          '🇮🇳 +91',
+                                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                        ),
+                                      ),
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                      filled: true,
+                                      fillColor: theme.colorScheme.surface,
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: BorderSide(color: theme.dividerColor),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: BorderSide(color: theme.dividerColor),
+                                      ),
+                                    ),
+                                  ),
+
+                                  if (_isOtpSent) ...[
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      'Verification Code (OTP)',
+                                      style: theme.textTheme.labelMedium?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    TextField(
+                                      controller: _otpController,
+                                      keyboardType: TextInputType.number,
+                                      maxLength: 6,
+                                      style: const TextStyle(fontSize: 14),
+                                      decoration: InputDecoration(
+                                        hintText: 'Enter 6-digit OTP',
+                                        hintStyle: const TextStyle(fontSize: 13),
+                                        prefixIcon: const Icon(Icons.lock_clock_rounded, color: AppColors.primarySaffron, size: 20),
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                        filled: true,
+                                        fillColor: theme.colorScheme.surface,
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide(color: theme.dividerColor),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+
+                                  const SizedBox(height: 12),
+
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: _isLoading
+                                          ? null
+                                          : (_isOtpSent ? _handleVerifyAndLogin : _handleSendOtp),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.primarySaffron,
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(vertical: 14),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        elevation: 1,
+                                      ),
+                                      child: _isLoading
+                                          ? const SizedBox(
+                                              height: 18,
+                                              width: 18,
+                                              child: CircularProgressIndicator(
+                                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                                strokeWidth: 2,
+                                              ),
+                                            )
+                                          : Text(
+                                              _isOtpSent ? 'Verify & Login 🚩' : 'Get Phone OTP & Login',
+                                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                                            ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                          ],
+
+                          // 3. SKIP LOGIN GUEST MODE BUTTON
+                          if (_authSettings.skipEnabled) ...[
+                            OutlinedButton.icon(
+                              onPressed: _isLoading ? null : _handleSkipLogin,
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                side: BorderSide(color: AppColors.primarySaffron.withValues(alpha: 0.5)),
+                              ),
+                              icon: const Text('🚩', style: TextStyle(fontSize: 16)),
+                              label: const Text(
+                                'Continue without Login (Guest Mode)',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.primarySaffron,
+                                ),
+                              ),
+                            ),
+                          ],
+
+                          const SizedBox(height: 16),
+                          const Center(
+                            child: Text(
+                              'By signing in, you agree to our Terms & Privacy Policy.',
+                              style: TextStyle(fontSize: 11, color: Colors.grey),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 14),
-              ],
-
-              // 3. SKIP LOGIN GUEST MODE BUTTON (Compact & Separate)
-              if (_authSettings.skipEnabled) ...[
-                OutlinedButton.icon(
-                  onPressed: _isLoading ? null : _handleSkipLogin,
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    side: BorderSide(color: AppColors.primarySaffron.withValues(alpha: 0.5)),
-                  ),
-                  icon: const Text('🚩', style: TextStyle(fontSize: 16)),
-                  label: const Text(
-                    'Continue without Login (Guest Mode)',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primarySaffron,
-                    ),
-                  ),
-                ),
-              ],
-
-              const SizedBox(height: 20),
-              const Center(
-                child: Text(
-                  'By signing in, you agree to our Terms & Privacy Policy.',
-                  style: TextStyle(fontSize: 11, color: Colors.grey),
-                  textAlign: TextAlign.center,
-                ),
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
