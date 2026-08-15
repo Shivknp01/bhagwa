@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/supabase/supabase_client.dart';
 
@@ -123,17 +124,39 @@ class AuthService {
     return channel;
   }
 
-  /// Sign in with Google OAuth
-  Future<bool> signInWithGoogle() async {
+  /// Sign in with native Google Account Picker on Android
+  Future<AuthResponse?> signInWithGoogle() async {
     try {
-      final bool res = await _client.auth.signInWithOAuth(
-        OAuthProvider.google,
-        redirectTo: kIsWeb ? null : 'bhagwa://auth-callback',
+      const webClientId = '100335575609-h7ud50l3v8stbdbgu0go8q67gft41qn9.apps.googleusercontent.com';
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        serverClientId: webClientId,
       );
-      return res;
+
+      final googleUser = await googleSignIn.signIn();
+      if (googleUser == null) return null;
+
+      final googleAuth = await googleUser.authentication;
+      final accessToken = googleAuth.accessToken;
+      final idToken = googleAuth.idToken;
+
+      if (idToken == null) {
+        throw Exception('No ID Token returned from Google');
+      }
+
+      return await _client.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: idToken,
+        accessToken: accessToken,
+      );
     } catch (e) {
-      debugPrint('Error in signInWithGoogle: $e');
-      rethrow;
+      debugPrint('Notice in native Google Sign-In: $e');
+      try {
+        await _client.auth.signInWithOAuth(
+          OAuthProvider.google,
+          redirectTo: kIsWeb ? null : 'bhagwa://auth-callback',
+        );
+      } catch (_) {}
+      return null;
     }
   }
 
