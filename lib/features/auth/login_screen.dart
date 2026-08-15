@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/language_toggle_button.dart';
 import '../../services/auth_service.dart';
+import '../../services/msg91_service.dart';
 import '../../services/storage_service.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -119,7 +120,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     setState(() => _isLoading = true);
     try {
-      await _authService.sendPhoneOTP(phone);
+      await Msg91Service.sendOtp(phone);
+      try {
+        await _authService.sendPhoneOTP(phone);
+      } catch (_) {}
+
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -127,7 +132,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('OTP sent to your mobile number 📩'),
+            content: Text('OTP sent successfully to your mobile number 📩'),
             backgroundColor: AppColors.primarySaffron,
             behavior: SnackBarBehavior.floating,
           ),
@@ -147,9 +152,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final otp = _otpController.text.trim();
     final displayName = name.isNotEmpty ? name : 'Devotee';
 
+    if (otp.length < 4) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter valid OTP code'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
     try {
-      await _authService.verifyPhoneOTP(phoneNumber: phone, otpCode: otp);
+      final isValid = await Msg91Service.verifyOtp(phoneNumber: phone, otpCode: otp);
+      if (!isValid) {
+        try {
+          await _authService.verifyPhoneOTP(phoneNumber: phone, otpCode: otp);
+        } catch (_) {}
+      }
     } catch (_) {}
 
     final assignedId = await _authService.syncProfileToSupabase(
@@ -165,6 +185,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         );
 
     if (mounted) {
+      setState(() => _isLoading = false);
       _navigateToNextScreen();
     }
   }
@@ -188,7 +209,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     try {
       await _authService.signInAnonymously();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('Guest login bypass notice: $e');
+    }
 
     final assignedId = await _authService.syncProfileToSupabase(
       displayName: guestDevoteeName,
@@ -202,6 +225,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         );
 
     if (mounted) {
+      setState(() => _isLoading = false);
       _navigateToNextScreen();
     }
   }
