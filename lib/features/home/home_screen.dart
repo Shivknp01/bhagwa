@@ -114,21 +114,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(6),
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
-                color: AppColors.primarySaffron.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
+                color: Colors.white,
+                border: Border.all(color: AppColors.primarySaffron.withValues(alpha: 0.5), width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primarySaffron.withValues(alpha: 0.2),
+                    blurRadius: 6,
+                  ),
+                ],
               ),
-              child: const Text('🚩', style: TextStyle(fontSize: 18)),
+              child: ClipOval(
+                child: Image.asset(
+                  'assets/images/daivik_logo.png',
+                  fit: BoxFit.cover,
+                ),
+              ),
             ),
             const SizedBox(width: 8),
-            const Text(
-              'Bhakti Sanga',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
+            Flexible(
+              child: Text(
+                'Daivik — Bhakti',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ),
           ],
@@ -151,10 +166,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               SliverToBoxAdapter(
                 child: Container(
                   margin: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 14,
+                  ),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFFD84315), Color(0xFFFF6D00), Color(0xFFFFB300)],
+                      colors: [
+                        Color(0xFFD84315),
+                        Color(0xFFFF6D00),
+                        Color(0xFFFFB300),
+                      ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -214,12 +236,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: GestureDetector(
                     onTap: () => context.push('/search'),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.surface,
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
-                          color: AppColors.primarySaffron.withValues(alpha: 0.4),
+                          color: AppColors.primarySaffron.withValues(
+                            alpha: 0.4,
+                          ),
                           width: 1.2,
                         ),
                         boxShadow: [
@@ -232,14 +259,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.search_rounded, color: AppColors.primarySaffron),
+                          const Icon(
+                            Icons.search_rounded,
+                            color: AppColors.primarySaffron,
+                          ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               'Search Bhajans, Mantras, Wallpapers...',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                                color: theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.5,
+                                ),
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -248,10 +280,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: AppColors.primarySaffron.withValues(alpha: 0.12),
+                              color: AppColors.primarySaffron.withValues(
+                                alpha: 0.12,
+                              ),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.mic_rounded, size: 16, color: AppColors.primarySaffron),
+                            child: const Icon(
+                              Icons.mic_rounded,
+                              size: 16,
+                              color: AppColors.primarySaffron,
+                            ),
                           ),
                         ],
                       ),
@@ -291,12 +329,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       GridView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          crossAxisSpacing: 10,
-                          mainAxisSpacing: 10,
-                          childAspectRatio: 1.6,
-                        ),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              crossAxisSpacing: 10,
+                              mainAxisSpacing: 10,
+                              childAspectRatio: 1.6,
+                            ),
                         itemCount: _categoryTiles.length,
                         itemBuilder: (context, index) {
                           final item = _categoryTiles[index];
@@ -308,20 +347,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           return GestureDetector(
                             onTap: () => _onCategoryTileTap(name),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 8,
+                              ),
                               decoration: BoxDecoration(
                                 gradient: isDark
                                     ? LinearGradient(
                                         colors: [
-                                          gradient.colors.first.withValues(alpha: 0.35),
-                                          gradient.colors.last.withValues(alpha: 0.2),
+                                          gradient.colors.first.withValues(
+                                            alpha: 0.35,
+                                          ),
+                                          gradient.colors.last.withValues(
+                                            alpha: 0.2,
+                                          ),
                                         ],
                                       )
                                     : gradient,
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
                                   color: isDark
-                                      ? AppColors.primarySaffron.withValues(alpha: 0.4)
+                                      ? AppColors.primarySaffron.withValues(
+                                          alpha: 0.4,
+                                        )
                                       : Colors.white.withValues(alpha: 0.6),
                                   width: 1.0,
                                 ),
@@ -338,9 +386,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
-                                        Text(emoji, style: const TextStyle(fontSize: 16)),
+                                        Text(
+                                          emoji,
+                                          style: const TextStyle(fontSize: 16),
+                                        ),
                                         const SizedBox(width: 4),
                                         Flexible(
                                           child: Text(
@@ -366,7 +418,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     Text(
                                       sub,
                                       style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.9),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.9,
+                                        ),
                                         fontSize: 10,
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -391,7 +445,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               // Feed Posts Title Header
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 4.0,
+                  ),
                   child: Row(
                     children: [
                       const Text('🪷', style: TextStyle(fontSize: 16)),
@@ -405,9 +462,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                       const Spacer(),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
-                          color: AppColors.primarySaffron.withValues(alpha: 0.1),
+                          color: AppColors.primarySaffron.withValues(
+                            alpha: 0.1,
+                          ),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
@@ -427,7 +489,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               // Feed Posts List / Loading / Empty
               if (_isLoading)
                 const SliverFillRemaining(
-                  child: LoadingIndicator(message: 'Loading sacred devotional feed...'),
+                  child: LoadingIndicator(
+                    message: 'Loading sacred devotional feed...',
+                  ),
                 )
               else if (_posts.isEmpty)
                 const SliverFillRemaining(
@@ -440,16 +504,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
                   sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final post = _posts[index];
-                        return DevotionalPostCard(
-                          post: post,
-                          onPostUpdated: _loadFeed,
-                        );
-                      },
-                      childCount: _posts.length,
-                    ),
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final post = _posts[index];
+                      return DevotionalPostCard(
+                        post: post,
+                        onPostUpdated: _loadFeed,
+                      );
+                    }, childCount: _posts.length),
                   ),
                 ),
             ],

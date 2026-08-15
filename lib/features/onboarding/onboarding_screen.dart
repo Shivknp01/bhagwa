@@ -15,10 +15,16 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   int _step = 0;
   final Set<String> _selectedDeities = {'Mahadev', 'Hanuman', 'Krishna'};
-  final Set<String> _selectedContentTypes = {'Bhajans', 'Wallpapers', 'Mantras'};
+  final Set<String> _selectedContentTypes = {
+    'Bhajans',
+    'Wallpapers',
+    'Mantras',
+  };
 
   void _finishOnboarding() {
-    ref.read(userPreferencesProvider.notifier).completeOnboarding(
+    ref
+        .read(userPreferencesProvider.notifier)
+        .completeOnboarding(
           _selectedDeities.toList(),
           _selectedContentTypes.toList(),
         );
@@ -58,9 +64,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 }),
               ),
 
-              Expanded(
-                child: _buildStepContent(theme),
-              ),
+              Expanded(child: _buildStepContent(theme)),
 
               // Bottom Navigation Action Button
               SizedBox(
@@ -83,8 +87,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     elevation: 2,
                   ),
                   child: Text(
-                    _step == 0 ? 'Continue' : (_step == 2 ? 'Explore Devotional Feed 🚩' : 'Next'),
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    _step == 0
+                        ? 'Continue'
+                        : (_step == 2 ? 'Explore Devotional Feed 🚩' : 'Next'),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
@@ -118,7 +127,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
             const SizedBox(height: 32),
             Text(
-              '🙏 Welcome to Bhakti Sanga',
+              '🙏 Welcome to Daivik — Bhakti',
               style: theme.textTheme.headlineLarge?.copyWith(
                 fontWeight: FontWeight.bold,
                 fontSize: 28,
@@ -128,9 +137,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             const SizedBox(height: 16),
             Text(
               'Make your day more peaceful and divine with wallpapers, music, bhajans, mantras, and daily horoscope.',
-              style: theme.textTheme.bodyLarge?.copyWith(
-                height: 1.5,
-              ),
+              style: theme.textTheme.bodyLarge?.copyWith(height: 1.5),
               textAlign: TextAlign.center,
             ),
           ],
@@ -169,10 +176,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                       side: BorderSide(
-                        color: isSelected ? AppColors.primarySaffron : theme.dividerColor,
+                        color: isSelected
+                            ? AppColors.primarySaffron
+                            : theme.dividerColor,
                       ),
                     ),
-                    labelPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    labelPadding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     label: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -181,8 +193,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         Text(
                           deity,
                           style: TextStyle(
-                            color: isSelected ? Colors.white : theme.colorScheme.onSurface,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            color: isSelected
+                                ? Colors.white
+                                : theme.colorScheme.onSurface,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                           ),
                         ),
                       ],
@@ -224,54 +240,64 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               child: Wrap(
                 spacing: 10,
                 runSpacing: 12,
-                children: [
-                  'Bhajans',
-                  'Wallpapers',
-                  'Ringtones',
-                  'Mantras',
-                  'Status',
-                  'Horoscope',
-                ].map((type) {
-                  final isSelected = _selectedContentTypes.contains(type);
-                  final emoji = _getContentEmoji(type);
+                children:
+                    [
+                      'Bhajans',
+                      'Wallpapers',
+                      'Ringtones',
+                      'Mantras',
+                      'Status',
+                      'Horoscope',
+                    ].map((type) {
+                      final isSelected = _selectedContentTypes.contains(type);
+                      final emoji = _getContentEmoji(type);
 
-                  return FilterChip(
-                    showCheckmark: false,
-                    selected: isSelected,
-                    selectedColor: AppColors.primarySaffron,
-                    backgroundColor: theme.colorScheme.surface,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(
-                        color: isSelected ? AppColors.primarySaffron : theme.dividerColor,
-                      ),
-                    ),
-                    labelPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    label: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(emoji, style: const TextStyle(fontSize: 16)),
-                        const SizedBox(width: 6),
-                        Text(
-                          type,
-                          style: TextStyle(
-                            color: isSelected ? Colors.white : theme.colorScheme.onSurface,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      return FilterChip(
+                        showCheckmark: false,
+                        selected: isSelected,
+                        selectedColor: AppColors.primarySaffron,
+                        backgroundColor: theme.colorScheme.surface,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: BorderSide(
+                            color: isSelected
+                                ? AppColors.primarySaffron
+                                : theme.dividerColor,
                           ),
                         ),
-                      ],
-                    ),
-                    onSelected: (selected) {
-                      setState(() {
-                        if (selected) {
-                          _selectedContentTypes.add(type);
-                        } else {
-                          _selectedContentTypes.remove(type);
-                        }
-                      });
-                    },
-                  );
-                }).toList(),
+                        labelPadding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        label: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(emoji, style: const TextStyle(fontSize: 16)),
+                            const SizedBox(width: 6),
+                            Text(
+                              type,
+                              style: TextStyle(
+                                color: isSelected
+                                    ? Colors.white
+                                    : theme.colorScheme.onSurface,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                          ],
+                        ),
+                        onSelected: (selected) {
+                          setState(() {
+                            if (selected) {
+                              _selectedContentTypes.add(type);
+                            } else {
+                              _selectedContentTypes.remove(type);
+                            }
+                          });
+                        },
+                      );
+                    }).toList(),
               ),
             ),
           ],

@@ -1,5 +1,5 @@
 class AppConstants {
-  static const String appName = 'Bhakti Sanga';
+  static const String appName = 'Daivik — Bhakti';
   static const String appTagline = 'Daily Devotional Feed, Bhajans & Mantras';
 
   static const List<String> contentCategories = [

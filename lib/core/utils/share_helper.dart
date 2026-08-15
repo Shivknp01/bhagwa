@@ -11,7 +11,8 @@ class ShareHelper {
     required String description,
   }) async {
     final String deepLink = buildDeepLink(postId);
-    final String message = '🙏 *$title*\n\n$description\n\n✨ Open in Bhakti App: $deepLink';
+    final String message =
+        '🙏 *$title*\n\n$description\n\n✨ Open in Bhakti App: $deepLink';
     // ignore: deprecated_member_use
     await Share.share(message, subject: title);
   }
@@ -22,7 +23,8 @@ class ShareHelper {
     required String description,
   }) async {
     final String deepLink = buildDeepLink(postId);
-    final String message = '🌸 *$title*\n\n$description\n\n🚩 Join Bhakti Sanga: $deepLink';
+    final String message =
+        '🌸 *$title*\n\n$description\n\n🚩 Join Daivik — Bhakti: $deepLink';
     // ignore: deprecated_member_use
     await Share.share(message, subject: title);
   }
