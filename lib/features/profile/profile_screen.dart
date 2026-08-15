@@ -8,6 +8,75 @@ import '../../services/storage_service.dart';
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
+  void _showEditProfileDialog(BuildContext context, WidgetRef ref) {
+    final prefs = ref.read(userPreferencesProvider);
+    final notifier = ref.read(userPreferencesProvider.notifier);
+    final nameController = TextEditingController(text: prefs.userName);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(
+            children: [
+              Text('🚩 ', style: TextStyle(fontSize: 20)),
+              Text('Edit Devotional Profile', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Devotee Display Name',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(
+                  hintText: 'e.g. Shiv_Bhakta_108 or Aditya Sharma',
+                  prefixIcon: const Icon(Icons.person_outline_rounded, color: AppColors.primarySaffron),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final newName = nameController.text.trim();
+                if (newName.isNotEmpty) {
+                  notifier.login(name: newName, phone: prefs.userPhone, email: prefs.userEmail);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Devotee profile name updated to "$newName" 🚩'),
+                      backgroundColor: AppColors.primarySaffron,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primarySaffron,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Save Changes', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final prefs = ref.watch(userPreferencesProvider);
@@ -59,13 +128,13 @@ class ProfileScreen extends ConsumerWidget {
                         Text(
                           prefs.userName,
                           style: const TextStyle(
-                            fontSize: 20,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${prefs.userPhone} • Active Devotee 🔱',
+                          prefs.userPhone.isNotEmpty ? '${prefs.userPhone} • Devotee 🔱' : 'Guest Devotee 🔱',
                           style: const TextStyle(
                             fontSize: 13,
                             color: AppColors.primarySaffronDark,
@@ -75,13 +144,18 @@ class ProfileScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
+                  IconButton(
+                    onPressed: () => _showEditProfileDialog(context, ref),
+                    icon: const Icon(Icons.edit_rounded, color: AppColors.primarySaffron),
+                    tooltip: 'Edit Profile Name',
+                  ),
                 ],
               ),
             ),
 
             const SizedBox(height: 24),
 
-            // Quick Collections Grid (Saved, Liked, Recently Played, Downloaded)
+            // Quick Collections Grid
             Text(
               'My Library',
               style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -134,6 +208,14 @@ class ProfileScreen extends ConsumerWidget {
               style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
+
+            _buildSettingTile(
+              context,
+              icon: Icons.edit_note_rounded,
+              title: 'Edit Devotee Name (${prefs.userName})',
+              onTap: () => _showEditProfileDialog(context, ref),
+            ),
+            const SizedBox(height: 10),
 
             // Dark Mode Switch Tile
             Container(
@@ -194,7 +276,7 @@ class ProfileScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
 
-            // Prominent Logout Button
+            // Logout Button
             ElevatedButton.icon(
               onPressed: () async {
                 final confirm = await showDialog<bool>(

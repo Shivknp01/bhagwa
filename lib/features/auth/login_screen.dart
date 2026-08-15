@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -34,7 +35,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _initAuthSettingsAndRealtime() async {
-    // Initial fetch
     final settings = await _authService.fetchAuthSettings();
     if (mounted) {
       setState(() {
@@ -42,7 +42,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       });
     }
 
-    // Subscribe to Supabase Realtime channel for live updates when admin toggles switches
     _realtimeChannel = _authService.subscribeToRealtimeAuthSettings(
       onSettingsChanged: (updatedSettings) {
         if (mounted) {
@@ -125,7 +124,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        // Fallback for simulation if OTP provider is pending setup
         setState(() => _isOtpSent = true);
       }
     }
@@ -153,12 +151,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _handleSkipLogin() async {
     setState(() => _isLoading = true);
+
+    // Pick a respectful Hindu mythological default username for Skip login
+    const mythologicalNames = [
+      'Shiv_Bhakta',
+      'Ram_Bhakta',
+      'Hanuman_Sevak',
+      'Krishna_Prem',
+      'Mahakal_Bhakta',
+      'Narayan_Bhakta',
+      'Durga_Bhakta',
+      'Ganesh_Bhakta'
+    ];
+    final randomPrefix = mythologicalNames[Random().nextInt(mythologicalNames.length)];
+    final randomId = 100 + Random().nextInt(900);
+    final guestDevoteeName = '${randomPrefix}_$randomId';
+
     try {
       await _authService.signInAnonymously();
     } catch (_) {}
 
     await ref.read(userPreferencesProvider.notifier).login(
-          name: 'Guest Devotee',
+          name: guestDevoteeName,
           phone: '',
         );
 
