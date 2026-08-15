@@ -1,0 +1,43 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'core/router/app_router.dart';
+import 'core/theme/app_theme.dart';
+import 'core/supabase/supabase_client.dart';
+import 'services/storage_service.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Supabase once at app startup
+  try {
+    await BhagwaSupabase.initialize();
+  } catch (e) {
+    debugPrint('Supabase initialization warning: $e');
+  }
+
+  runApp(
+    const ProviderScope(
+      child: BhaktiApp(),
+    ),
+  );
+}
+
+class BhaktiApp extends ConsumerWidget {
+  const BhaktiApp({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(appRouterProvider);
+    final userPrefs = ref.watch(userPreferencesProvider);
+
+    return MaterialApp.router(
+      title: 'Bhagwa Devotional',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: userPrefs.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      routerConfig: router,
+    );
+  }
+}
