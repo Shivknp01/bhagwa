@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/language_toggle_button.dart';
 import '../../services/auth_service.dart';
+import '../../services/meta_analytics_service.dart';
 import '../../services/msg91_service.dart';
 import '../../services/storage_service.dart';
 
@@ -91,6 +92,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             phone: '',
             bhagwaUserId: assignedId,
           );
+      MetaAnalyticsService.logRegistration(registrationMethod: 'google');
       if (mounted) _navigateToNextScreen();
     } catch (e) {
       if (mounted) {
@@ -183,6 +185,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           phone: '+91 $phone',
           bhagwaUserId: assignedId,
         );
+    MetaAnalyticsService.logRegistration(registrationMethod: 'phone');
 
     if (mounted) {
       setState(() => _isLoading = false);
@@ -223,6 +226,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           phone: '',
           bhagwaUserId: assignedId,
         );
+    MetaAnalyticsService.logRegistration(registrationMethod: 'guest');
 
     if (mounted) {
       setState(() => _isLoading = false);

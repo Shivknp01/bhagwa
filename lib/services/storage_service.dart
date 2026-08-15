@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'meta_analytics_service.dart';
+
 class UserPreferences {
   final bool isLoggedIn;
   final bool onboardingCompleted;
@@ -10,6 +12,7 @@ class UserPreferences {
   final String userPhone;
   final String userEmail;
   final bool isDarkMode;
+  final int paymentCount;
   final List<String> selectedDeities;
   final List<String> selectedContentTypes;
   final bool morningBhaktiNotif;
@@ -26,6 +29,7 @@ class UserPreferences {
     this.userPhone = '+91 98765 43210',
     this.userEmail = 'aditya@example.com',
     this.isDarkMode = false,
+    this.paymentCount = 0,
     this.selectedDeities = const ['Mahadev', 'Hanuman', 'Krishna'],
     this.selectedContentTypes = const ['Bhajans', 'Wallpapers', 'Mantras'],
     this.morningBhaktiNotif = true,
@@ -43,6 +47,7 @@ class UserPreferences {
     String? userPhone,
     String? userEmail,
     bool? isDarkMode,
+    int? paymentCount,
     List<String>? selectedDeities,
     List<String>? selectedContentTypes,
     bool? morningBhaktiNotif,
@@ -59,6 +64,7 @@ class UserPreferences {
       userPhone: userPhone ?? this.userPhone,
       userEmail: userEmail ?? this.userEmail,
       isDarkMode: isDarkMode ?? this.isDarkMode,
+      paymentCount: paymentCount ?? this.paymentCount,
       selectedDeities: selectedDeities ?? this.selectedDeities,
       selectedContentTypes: selectedContentTypes ?? this.selectedContentTypes,
       morningBhaktiNotif: morningBhaktiNotif ?? this.morningBhaktiNotif,
@@ -86,6 +92,7 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
     final userPhone = _prefs?.getString('user_phone') ?? '+91 98765 43210';
     final userEmail = _prefs?.getString('user_email') ?? 'aditya@example.com';
     final isDarkMode = _prefs?.getBool('is_dark_mode') ?? false;
+    final paymentCount = _prefs?.getInt('payment_count') ?? 0;
     final selectedDeities = _prefs?.getStringList('selected_deities') ?? ['Mahadev', 'Hanuman', 'Krishna'];
     final selectedContentTypes = _prefs?.getStringList('selected_content_types') ?? ['Bhajans', 'Wallpapers', 'Mantras'];
 
@@ -98,6 +105,7 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
       userPhone: userPhone,
       userEmail: userEmail,
       isDarkMode: isDarkMode,
+      paymentCount: paymentCount,
       selectedDeities: selectedDeities,
       selectedContentTypes: selectedContentTypes,
     );
@@ -179,6 +187,20 @@ class UserPreferencesNotifier extends StateNotifier<UserPreferences> {
 
   void toggleFestivalNotif() {
     state = state.copyWith(festivalNotif: !state.festivalNotif);
+  }
+
+  Future<void> recordPayment({required double amount, String currency = 'INR'}) async {
+    final newCount = state.paymentCount + 1;
+    state = state.copyWith(paymentCount: newCount);
+    await _prefs?.setInt('payment_count', newCount);
+
+    // Trigger Meta Marketing Events
+    MetaAnalyticsService.logPurchase(amount: amount, currency: currency);
+    if (newCount == 1) {
+      MetaAnalyticsService.logFirstPay(amount: amount, currency: currency);
+    } else if (newCount == 2) {
+      MetaAnalyticsService.logSecondPay(amount: amount, currency: currency);
+    }
   }
 }
 

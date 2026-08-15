@@ -6,9 +6,14 @@ import 'core/theme/app_theme.dart';
 import 'core/supabase/supabase_client.dart';
 import 'services/storage_service.dart';
 
+import 'services/meta_analytics_service.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  // Initialize Meta Analytics SDK Install event
+  MetaAnalyticsService.logInstall();
+
   // Initialize Supabase once at app startup
   try {
     await BhagwaSupabase.initialize();
