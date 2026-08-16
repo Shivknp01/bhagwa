@@ -9,23 +9,30 @@ import 'services/storage_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'services/marketing_event_service.dart';
 import 'services/permission_service.dart';
+import 'services/push_notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase Core for Analytics & Crash reporting
+  // Initialize Firebase Core for Analytics, FCM & Crash reporting
   try {
     await Firebase.initializeApp();
   } catch (e) {
     debugPrint('Firebase initialization notice: $e');
   }
-  
+
+  // Initialize FCM push notifications (registers token, sets up handlers)
+  try {
+    await PushNotificationService.initialize();
+  } catch (e) {
+    debugPrint('PushNotificationService init notice: $e');
+  }
+
   // Initialize Marketing Event Service install tracking
   MarketingEventService.trackInstall();
 
   // Prompt Runtime OS Permissions for Notifications & Media Storage
   try {
-    await PermissionService.requestNotificationPermission();
     await PermissionService.requestMediaUploadPermissions();
   } catch (e) {
     debugPrint('Startup permissions request notice: $e');
