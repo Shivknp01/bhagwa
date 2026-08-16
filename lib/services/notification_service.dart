@@ -25,10 +25,10 @@ class DevotionalNotification {
     return DevotionalNotification(
       id: map['id']?.toString() ?? '',
       title: map['title']?.toString() ?? map['heading']?.toString() ?? 'Daivik Alert',
-      body: map['body']?.toString() ?? map['message']?.toString() ?? '',
+      body: map['message']?.toString() ?? map['body']?.toString() ?? '',
       imageUrl: map['image_url']?.toString() ?? map['imageUrl']?.toString(),
-      actionUrl: map['action_url']?.toString() ?? map['actionUrl']?.toString(),
-      targetAudience: map['target_audience']?.toString() ?? map['targetAudience']?.toString() ?? 'all',
+      actionUrl: map['deep_link']?.toString() ?? map['action_url']?.toString() ?? map['actionUrl']?.toString(),
+      targetAudience: map['audience']?.toString() ?? map['target_audience']?.toString() ?? 'all',
       createdAt: map['created_at'] != null
           ? DateTime.parse(map['created_at'].toString())
           : map['createdAt'] != null
@@ -45,7 +45,7 @@ class NotificationService {
   Future<List<DevotionalNotification>> fetchNotifications() async {
     try {
       final response = await _client
-          .from('notifications')
+          .from('notification_campaigns')
           .select('*')
           .order('created_at', ascending: false);
 
@@ -64,11 +64,11 @@ class NotificationService {
   RealtimeChannel subscribeToRealtimeNotifications({
     required Function(DevotionalNotification notification) onNewNotification,
   }) {
-    final channel = _client.channel('public:notifications');
+    final channel = _client.channel('public:notification_campaigns');
     channel.onPostgresChanges(
       event: PostgresChangeEvent.insert,
       schema: 'public',
-      table: 'notifications',
+      table: 'notification_campaigns',
       callback: (payload) {
         final notif = DevotionalNotification.fromMap(payload.newRecord);
         onNewNotification(notif);
