@@ -8,6 +8,7 @@ import 'services/storage_service.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'services/marketing_event_service.dart';
+import 'services/permission_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +22,14 @@ void main() async {
   
   // Initialize Marketing Event Service install tracking
   MarketingEventService.trackInstall();
+
+  // Prompt Runtime OS Permissions for Notifications & Media Storage
+  try {
+    await PermissionService.requestNotificationPermission();
+    await PermissionService.requestMediaUploadPermissions();
+  } catch (e) {
+    debugPrint('Startup permissions request notice: $e');
+  }
 
   // Initialize Supabase once at app startup
   try {
