@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/number_formatter.dart';
+import '../../../core/widgets/coming_soon_dialog.dart';
 import '../../../core/widgets/network_image_placeholder.dart';
 import '../../../data/repositories/mock_content_repository.dart';
 import '../../../models/devotional_post.dart';
@@ -104,7 +105,11 @@ class _DevotionalPostCardState extends ConsumerState<DevotionalPostCard>
 
       case PostActionType.playMusic:
       case PostActionType.playBhajan:
-        ref.read(audioServiceProvider.notifier).playPost(_post);
+        showComingSoonDialog(
+          context,
+          featureName: 'Devotional Audio & Bhajan Streaming',
+          iconEmoji: '🎵',
+        );
         break;
 
       case PostActionType.setRingtone:

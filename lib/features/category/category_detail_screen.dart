@@ -106,7 +106,7 @@ class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
             children: [
               // Hero Category Banner
               Container(
-                margin: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   gradient: gradient,
@@ -156,6 +156,37 @@ class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
                   ],
                 ),
               ),
+
+              if (widget.categoryName.toLowerCase().contains('bhajan') ||
+                  widget.categoryName.toLowerCase().contains('music') ||
+                  widget.categoryName.toLowerCase().contains('ringtone'))
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AppColors.primarySaffron.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: AppColors.primarySaffron.withValues(alpha: 0.4),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Text('🎵', style: TextStyle(fontSize: 20)),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          '${widget.categoryName} audio streaming and downloads feature coming soon in upcoming update! 🚩',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primarySaffronDark,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
 
               // Item Count Header
               Padding(

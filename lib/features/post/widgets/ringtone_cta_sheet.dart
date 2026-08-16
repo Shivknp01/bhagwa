@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../services/ringtone_service.dart';
+import '../../../core/widgets/coming_soon_dialog.dart';
 
 class RingtoneCtaSheet extends ConsumerStatefulWidget {
   final String audioUrl;
@@ -18,35 +18,12 @@ class RingtoneCtaSheet extends ConsumerStatefulWidget {
 }
 
 class _RingtoneCtaSheetState extends ConsumerState<RingtoneCtaSheet> {
-  bool _isPlayingPreview = false;
-  bool _isSetting = false;
+  final bool _isPlayingPreview = false;
+  final bool _isSetting = false;
 
   Future<void> _setRingtone() async {
-    setState(() => _isSetting = true);
-    final service = ref.read(ringtoneServiceProvider);
-    final success = await service.setRingtone(widget.audioUrl, widget.title);
-
-    if (mounted) {
-      Navigator.pop(context);
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: const [
-                Icon(Icons.check_circle_rounded, color: Colors.white),
-                SizedBox(width: 12),
-                Text('Ringtone set successfully! 🔔'),
-              ],
-            ),
-            backgroundColor: AppColors.primarySaffron,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        );
-      }
-    }
+    Navigator.pop(context);
+    showComingSoonDialog(context, featureName: 'Devotional Ringtone', iconEmoji: '🔔');
   }
 
   @override
@@ -114,7 +91,7 @@ class _RingtoneCtaSheetState extends ConsumerState<RingtoneCtaSheet> {
               children: [
                 IconButton(
                   onPressed: () {
-                    setState(() => _isPlayingPreview = !_isPlayingPreview);
+                    showComingSoonDialog(context, featureName: 'Audio Preview', iconEmoji: '🎵');
                   },
                   icon: Icon(
                     _isPlayingPreview ? Icons.pause_circle_filled_rounded : Icons.play_circle_fill_rounded,
