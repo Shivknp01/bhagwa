@@ -5,8 +5,8 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/supabase/supabase_client.dart';
 import 'services/storage_service.dart';
-
 import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'services/marketing_event_service.dart';
 import 'services/permission_service.dart';
 import 'services/push_notification_service.dart';
@@ -16,7 +16,10 @@ void main() async {
 
   // Initialize Firebase Core for Analytics, FCM & Crash reporting
   try {
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    debugPrint('[Firebase] Initialized successfully!');
   } catch (e) {
     debugPrint('Firebase initialization notice: $e');
   }
