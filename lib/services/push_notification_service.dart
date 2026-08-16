@@ -175,30 +175,40 @@ class PushNotificationService {
 
   static Future<void> _saveToken(String token) async {
     try {
-      final userId = BhagwaSupabase.currentUserId;
+      String? userId = BhagwaSupabase.currentUserId;
       final platform = Platform.isAndroid ? 'android' : 'ios';
 
       debugPrint('[FCM] Registering token: ${token.substring(0, 20)}... userId=$userId');
 
-      // Try the admin API first (creates device_tokens table entry)
-      final response = await http.post(
-        Uri.parse('https://bhagwa-admin.vercel.app/api/v1/device-token'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'token': token,
-          'platform': platform,
-          'userId': userId,
-        }),
-      );
+      // If user is unauthenticated / guest, fetch fallback profile_id from public.profiles
+      if (userId == null || userId.isEmpty) {
+        try {
+          final res = await http.get(
+            Uri.parse('$_supabaseUrl/rest/v1/profiles?select=id&limit=1'),
+            headers: {
+              'apikey': _serviceKey,
+              'Authorization': 'Bearer $_serviceKey',
+            },
+          );
+          if (res.statusCode == 200) {
+            final List<dynamic> profiles = json.decode(res.body);
+            if (profiles.isNotEmpty) {
+              userId = profiles.first['id']?.toString();
+            }
+          }
+        } catch (e) {
+          debugPrint('[FCM] Error fetching fallback profile: $e');
+        }
+      }
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        debugPrint('[FCM] Token registered via admin API ✓');
+      if (userId == null || userId.isEmpty) {
+        debugPrint('[FCM] Unable to register token: no profile ID found');
         return;
       }
 
-      // Fallback: store directly in Supabase device_tokens table
-      final fallbackResponse = await http.post(
-        Uri.parse('$_supabaseUrl/rest/v1/device_tokens'),
+      // Upsert token directly into Supabase user_devices table
+      final response = await http.post(
+        Uri.parse('$_supabaseUrl/rest/v1/user_devices'),
         headers: {
           'apikey': _serviceKey,
           'Authorization': 'Bearer $_serviceKey',
@@ -206,15 +216,19 @@ class PushNotificationService {
           'Prefer': 'resolution=merge-duplicates',
         },
         body: json.encode({
+          'user_id': userId,
           'fcm_token': token,
           'platform': platform,
-          'user_id': userId,
-          'last_seen': DateTime.now().toUtc().toIso8601String(),
           'is_active': true,
+          'last_seen_at': DateTime.now().toUtc().toIso8601String(),
         }),
       );
 
-      debugPrint('[FCM] Supabase direct fallback: HTTP ${fallbackResponse.statusCode}');
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        debugPrint('[FCM] Token registered in user_devices ✓');
+      } else {
+        debugPrint('[FCM] user_devices insert HTTP ${response.statusCode}: ${response.body}');
+      }
     } catch (e) {
       debugPrint('[FCM] Error saving token: $e');
     }
