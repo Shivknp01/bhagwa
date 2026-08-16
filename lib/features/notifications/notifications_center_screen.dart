@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/notification_service.dart';
 
 class NotificationsCenterScreen extends StatefulWidget {
@@ -13,11 +14,38 @@ class _NotificationsCenterScreenState extends State<NotificationsCenterScreen> {
   final NotificationService _service = NotificationService();
   List<DevotionalNotification> _notifications = [];
   bool _isLoading = true;
+  RealtimeChannel? _realtimeChannel;
 
   @override
   void initState() {
     super.initState();
     _loadNotifications();
+    _subscribeRealtime();
+  }
+
+  void _subscribeRealtime() {
+    _realtimeChannel = _service.subscribeToRealtimeNotifications(
+      onNewNotification: (notif) {
+        if (mounted) {
+          setState(() {
+            _notifications.insert(0, notif);
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('🔔 ${notif.title}'),
+              backgroundColor: const Color(0xFFFF7A00),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _realtimeChannel?.unsubscribe();
+    super.dispose();
   }
 
   Future<void> _loadNotifications() async {

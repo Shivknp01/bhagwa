@@ -24,14 +24,16 @@ class DevotionalNotification {
   factory DevotionalNotification.fromMap(Map<String, dynamic> map) {
     return DevotionalNotification(
       id: map['id']?.toString() ?? '',
-      title: map['title']?.toString() ?? 'Daivik Alert',
-      body: map['body']?.toString() ?? '',
-      imageUrl: map['image_url']?.toString(),
-      actionUrl: map['action_url']?.toString(),
-      targetAudience: map['target_audience']?.toString() ?? 'all',
+      title: map['title']?.toString() ?? map['heading']?.toString() ?? 'Daivik Alert',
+      body: map['body']?.toString() ?? map['message']?.toString() ?? '',
+      imageUrl: map['image_url']?.toString() ?? map['imageUrl']?.toString(),
+      actionUrl: map['action_url']?.toString() ?? map['actionUrl']?.toString(),
+      targetAudience: map['target_audience']?.toString() ?? map['targetAudience']?.toString() ?? 'all',
       createdAt: map['created_at'] != null
           ? DateTime.parse(map['created_at'].toString())
-          : DateTime.now(),
+          : map['createdAt'] != null
+              ? DateTime.parse(map['createdAt'].toString())
+              : DateTime.now(),
     );
   }
 }
@@ -45,14 +47,15 @@ class NotificationService {
       final response = await _client
           .from('notifications')
           .select('*')
-          .eq('status', 'sent')
           .order('created_at', ascending: false);
 
-      return (response as List)
+      final list = (response as List)
           .map((row) => DevotionalNotification.fromMap(row as Map<String, dynamic>))
           .toList();
+
+      return list;
     } catch (e) {
-      debugPrint('Error fetching notifications: $e');
+      debugPrint('Error fetching notifications from Supabase: $e');
       return _getFallbackNotifications();
     }
   }
