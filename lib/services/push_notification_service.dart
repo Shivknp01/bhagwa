@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui' show Color;
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -8,26 +9,81 @@ import 'package:http/http.dart' as http;
 
 import '../core/supabase/supabase_client.dart';
 
-// ─── Background FCM handler (must be top-level function) ─────────────────────
+
+// ─── Shared plugin instance (used in both main isolate & background isolate) ──
+final FlutterLocalNotificationsPlugin _localPlugin =
+    FlutterLocalNotificationsPlugin();
+
+const String _channelId = 'daivik_broadcasts';
+const String _channelName = 'Daivik Broadcasts';
+const String _channelDesc = 'Festival alerts, Aarti reminders & Wallpaper updates';
+
+// ─── Background FCM handler — MUST be a top-level function ───────────────────
+// Runs in a SEPARATE Dart isolate. Re-inits local notifications plugin here.
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  debugPrint('[FCM] Background message: ${message.messageId}');
-  // Background messages with notification payload are automatically shown by OS.
-  // For data-only messages, show a local notification.
-  if (message.notification == null && message.data.isNotEmpty) {
-    await PushNotificationService._showLocalNotificationFromData(message.data);
+  debugPrint('[FCM-BG] Received: ${message.messageId} data=${message.data}');
+
+  // Re-initialize flutter_local_notifications in this isolate
+  await _initLocalNotificationsInIsolate();
+
+  // Always show a local notification from the data map.
+  // We use data-only FCM, so message.notification is always null here.
+  final data = message.data;
+  if (data.isNotEmpty) {
+    await _showLocalNotificationFromData(data, message.hashCode);
   }
+}
+
+/// Lightweight init for background isolate — only init plugin, don't create channel
+/// (channels persist per app install, no need to recreate)
+Future<void> _initLocalNotificationsInIsolate() async {
+  const androidInit = AndroidInitializationSettings('@drawable/ic_stat_notification');
+  await _localPlugin.initialize(
+    const InitializationSettings(android: androidInit),
+  );
+}
+
+/// Show a local notification from a data map (used in both FG and BG)
+Future<void> _showLocalNotificationFromData(
+    Map<String, dynamic> data, int id) async {
+  final title = data['title']?.toString() ?? 'Daivik 🙏';
+  final body = data['body']?.toString() ?? '';
+
+  await _localPlugin.show(
+    id,
+    title,
+    body,
+    NotificationDetails(
+      android: AndroidNotificationDetails(
+        _channelId,
+        _channelName,
+        channelDescription: _channelDesc,
+        importance: Importance.max,
+        priority: Priority.max,
+        visibility: NotificationVisibility.public,
+        icon: '@drawable/ic_stat_notification',
+        largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+        styleInformation: BigTextStyleInformation(body),
+        enableVibration: true,
+        playSound: true,
+        enableLights: true,
+        ledColor: const Color(0xFFFF6B00),
+        ledOnMs: 1000,
+        ledOffMs: 500,
+      ),
+      iOS: const DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
+    ),
+  );
 }
 
 // ─── PushNotificationService ──────────────────────────────────────────────────
 class PushNotificationService {
   static final FirebaseMessaging _fcm = FirebaseMessaging.instance;
-  static final FlutterLocalNotificationsPlugin _local =
-      FlutterLocalNotificationsPlugin();
-
-  static const _channelId = 'daivik_broadcasts';
-  static const _channelName = 'Daivik Broadcasts';
-  static const _channelDesc = 'Festival alerts, Aarti reminders & Wallpaper updates';
 
   static const String _supabaseUrl = 'https://fyhtlazvmvsdgsrndoxh.supabase.co';
   static const String _serviceKey =
@@ -35,59 +91,75 @@ class PushNotificationService {
 
   /// Call this ONCE in main() before runApp()
   static Future<void> initialize() async {
-    // 1. Request OS permission
+    // 1. Request OS permission (Android 13+ / iOS)
     final settings = await _fcm.requestPermission(
       alert: true,
       badge: true,
       sound: true,
       provisional: false,
+      criticalAlert: false,
     );
     debugPrint('[FCM] Permission: ${settings.authorizationStatus}');
 
-    // 2. Init local notifications channel
+    // 2. Initialize local notifications & create Android channel
     await _initLocalNotifications();
 
-    // 3. Register background handler
+    // 3. Register top-level background handler (data-only messages)
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
-    // 4. Register token + listen for token refresh
+    // 4. iOS foreground presentation options
+    await _fcm.setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    // 5. Register FCM token
     await _registerToken();
     _fcm.onTokenRefresh.listen(_saveToken);
 
-    // 5. Foreground message handler → show local banner
+    // 6. FOREGROUND message handler
+    // Since we send data-only FCM, onMessage always fires when app is open.
+    // We must show a local notification manually here.
     FirebaseMessaging.onMessage.listen((message) {
-      debugPrint('[FCM] Foreground: ${message.notification?.title}');
-      _showLocalNotification(message);
+      debugPrint('[FCM-FG] message: ${message.data}');
+      _showLocalNotificationFromData(message.data, message.hashCode);
     });
 
-    // 6. App opened from notification tap
+    // 7. App opened by tapping a notification
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
-      debugPrint('[FCM] Opened from notification: ${message.data}');
+      debugPrint('[FCM] Opened from notification tap: ${message.data}');
+      // TODO: Navigate to the action_url from message.data['action_url']
     });
 
-    // 7. Check if app was launched from a terminated-state notification
+    // 8. App launched from terminated state via notification tap
     final initial = await _fcm.getInitialMessage();
     if (initial != null) {
       debugPrint('[FCM] Launched from terminated notification: ${initial.data}');
     }
   }
 
-  // ── Local Notifications Setup ──────────────────────────────────────────────
+  // ── Local Notifications Setup (main isolate) ───────────────────────────────
   static Future<void> _initLocalNotifications() async {
-    const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidInit = AndroidInitializationSettings('@drawable/ic_stat_notification');
     const iosInit = DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
       requestSoundPermission: false,
     );
 
-    await _local.initialize(
+    await _localPlugin.initialize(
       const InitializationSettings(android: androidInit, iOS: iosInit),
+      onDidReceiveNotificationResponse: (details) {
+        debugPrint('[LocalNotif] Tapped: ${details.payload}');
+        // TODO: navigate using details.payload (action_url)
+      },
     );
 
-    // Create Android notification channel
+    // Create the Android notification channel with MAXIMUM importance
+    // This must be done before the first notification is shown.
     if (Platform.isAndroid) {
-      await _local
+      await _localPlugin
           .resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>()
           ?.createNotificationChannel(
@@ -98,73 +170,18 @@ class PushNotificationService {
               importance: Importance.max,
               playSound: true,
               enableVibration: true,
+              showBadge: true,
             ),
           );
+      debugPrint('[FCM] Android notification channel created: $_channelId');
     }
-  }
-
-  // ── Show Local Notification from RemoteMessage ─────────────────────────────
-  static Future<void> _showLocalNotification(RemoteMessage message) async {
-    final notif = message.notification;
-    final title = notif?.title ?? message.data['title'] ?? 'Daivik';
-    final body = notif?.body ?? message.data['body'] ?? '';
-
-    await _local.show(
-      message.hashCode,
-      title,
-      body,
-      NotificationDetails(
-        android: AndroidNotificationDetails(
-          _channelId,
-          _channelName,
-          channelDescription: _channelDesc,
-          importance: Importance.max,
-          priority: Priority.max,
-          visibility: NotificationVisibility.public,
-          icon: '@mipmap/ic_launcher',
-          largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
-          styleInformation: BigTextStyleInformation(body),
-          enableVibration: true,
-          playSound: true,
-        ),
-        iOS: const DarwinNotificationDetails(
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-        ),
-      ),
-    );
-  }
-
-  // ── Show Local Notification from data map (background data-only) ───────────
-  static Future<void> _showLocalNotificationFromData(
-      Map<String, dynamic> data) async {
-    final title = data['title']?.toString() ?? 'Daivik';
-    final body = data['body']?.toString() ?? '';
-
-    await _local.show(
-      data.hashCode,
-      title,
-      body,
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          _channelId,
-          _channelName,
-          importance: Importance.max,
-          priority: Priority.max,
-          visibility: NotificationVisibility.public,
-          icon: '@mipmap/ic_launcher',
-          enableVibration: true,
-          playSound: true,
-        ),
-      ),
-    );
   }
 
   // ── Token Registration ─────────────────────────────────────────────────────
   static Future<void> _registerToken() async {
     try {
       final token = await _fcm.getToken();
+      debugPrint('[FCM] Token: ${token?.substring(0, 20)}...');
       if (token != null) {
         await _saveToken(token);
       }
@@ -178,9 +195,9 @@ class PushNotificationService {
       String? userId = BhagwaSupabase.currentUserId;
       final platform = Platform.isAndroid ? 'android' : 'ios';
 
-      debugPrint('[FCM] Registering token: ${token.substring(0, 20)}... userId=$userId');
+      debugPrint('[FCM] Saving token userId=$userId platform=$platform');
 
-      // If user is unauthenticated / guest, fetch fallback profile_id from public.profiles
+      // Guest user: fetch a fallback profile ID
       if (userId == null || userId.isEmpty) {
         try {
           final res = await http.get(
@@ -202,11 +219,10 @@ class PushNotificationService {
       }
 
       if (userId == null || userId.isEmpty) {
-        debugPrint('[FCM] Unable to register token: no profile ID found');
+        debugPrint('[FCM] No profile ID found — token not registered');
         return;
       }
 
-      // Upsert token directly into Supabase user_devices table
       final response = await http.post(
         Uri.parse('$_supabaseUrl/rest/v1/user_devices'),
         headers: {
@@ -227,7 +243,7 @@ class PushNotificationService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         debugPrint('[FCM] Token registered in user_devices ✓');
       } else {
-        debugPrint('[FCM] user_devices insert HTTP ${response.statusCode}: ${response.body}');
+        debugPrint('[FCM] user_devices insert error ${response.statusCode}: ${response.body}');
       }
     } catch (e) {
       debugPrint('[FCM] Error saving token: $e');
