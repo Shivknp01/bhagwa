@@ -16,7 +16,9 @@ import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../features/reader/mantra_reader_screen.dart';
 import '../../features/search/search_screen.dart';
+import '../../features/wallpaper/wallpaper_screen.dart';
 import '../../services/storage_service.dart';
+
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final prefs = ref.watch(userPreferencesProvider);
@@ -80,14 +82,24 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
 
+      // Wallpaper Dedicated Route
+      GoRoute(
+        path: '/wallpaper',
+        builder: (context, state) => const WallpaperScreen(),
+      ),
+
       // Category Detail Route
       GoRoute(
         path: '/category/:name',
         builder: (context, state) {
           final categoryName = state.pathParameters['name'] ?? 'All';
+          if (categoryName.toLowerCase() == 'wallpaper') {
+            return const WallpaperScreen();
+          }
           return CategoryDetailScreen(categoryName: categoryName);
         },
       ),
+
 
       // Full screen routes
       GoRoute(
