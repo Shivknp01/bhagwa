@@ -12,7 +12,9 @@ import '../../../services/storage_service.dart';
 import 'comments_sheet.dart';
 import 'ringtone_cta_sheet.dart';
 import 'status_share_sheet.dart';
-import 'wallpaper_cta_sheet.dart';
+import '../../wallpaper/wallpaper_detail_preview_screen.dart';
+
+
 
 class DevotionalPostCard extends ConsumerStatefulWidget {
   final DevotionalPost post;
@@ -93,15 +95,18 @@ class _DevotionalPostCardState extends ConsumerState<DevotionalPostCard>
   void _executePrimaryAction() {
     switch (_post.actionType) {
       case PostActionType.setWallpaper:
-        showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          builder: (context) => WallpaperCtaSheet(
-            imageUrl: _post.imageUrl ?? '',
-            title: _post.title,
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => WallpaperDetailPreviewScreen(
+              imageUrl: _post.imageUrl ?? '',
+              title: _post.title,
+              initialLikes: _post.likes,
+            ),
           ),
         );
         break;
+
 
       case PostActionType.playMusic:
       case PostActionType.playBhajan:

@@ -4,7 +4,9 @@ import '../../core/theme/app_colors.dart';
 import '../../core/widgets/language_toggle_button.dart';
 import '../../data/repositories/mock_content_repository.dart';
 import '../../models/devotional_post.dart';
-import '../post/widgets/wallpaper_cta_sheet.dart';
+import 'wallpaper_detail_preview_screen.dart';
+
+
 
 class DeityAvatarItem {
   final String id;
@@ -168,17 +170,18 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
     }
   }
 
-  void _openWallpaperCtaSheet(String imageUrl, String title) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => WallpaperCtaSheet(
-        imageUrl: imageUrl,
-        title: title,
+  void _openWallpaperPreview(String imageUrl, String title) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => WallpaperDetailPreviewScreen(
+          imageUrl: imageUrl,
+          title: title,
+        ),
       ),
     );
   }
+
 
   List<Map<String, String>> _getFilteredList(List<Map<String, String>> original) {
     if (_selectedDeityId == null) return original;
@@ -361,7 +364,8 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
                             final item = filteredTopLive[index];
 
                             return GestureDetector(
-                              onTap: () => _openWallpaperCtaSheet(
+                              onTap: () => _openWallpaperPreview(
+
                                 item['imageUrl']!,
                                 item['title']!,
                               ),
@@ -553,7 +557,8 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
                       final item = filteredNew[index];
 
                       return GestureDetector(
-                        onTap: () => _openWallpaperCtaSheet(
+                        onTap: () => _openWallpaperPreview(
+
                           item['imageUrl']!,
                           item['title']!,
                         ),
