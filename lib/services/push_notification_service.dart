@@ -115,8 +115,9 @@ class PushNotificationService {
     );
 
     // 5. Register FCM token
-    await _registerToken();
-    _fcm.onTokenRefresh.listen(_saveToken);
+    await registerTokenForProfile();
+    _fcm.onTokenRefresh.listen((token) => registerTokenForProfile());
+
 
     // 6. FOREGROUND message handler
     // Since we send data-only FCM, onMessage always fires when app is open.
@@ -178,30 +179,27 @@ class PushNotificationService {
   }
 
   // ── Token Registration ─────────────────────────────────────────────────────
-  static Future<void> _registerToken() async {
+  static Future<void> registerTokenForProfile([String? profileUuid]) async {
     try {
       final token = await _fcm.getToken();
-      debugPrint('[FCM] Token: ${token?.substring(0, 20)}...');
-      if (token != null) {
-        await _saveToken(token);
+      if (token == null || token.isEmpty) {
+        debugPrint('[FCM] No FCM token returned by device');
+        return;
       }
-    } catch (e) {
-      debugPrint('[FCM] Token registration error: $e');
-    }
-  }
+      debugPrint('[FCM] Registering token: ${token.substring(0, 20)}...');
 
-  static Future<void> _saveToken(String token) async {
-    try {
-      String? userId = BhagwaSupabase.currentUserId;
-      final platform = Platform.isAndroid ? 'android' : 'ios';
+      String? targetUuid = profileUuid;
 
-      debugPrint('[FCM] Saving token userId=$userId platform=$platform');
+      // 1. Try Supabase Auth user ID
+      if (targetUuid == null || targetUuid.isEmpty) {
+        targetUuid = BhagwaSupabase.currentUserId;
+      }
 
-      // Guest user: fetch a fallback profile ID
-      if (userId == null || userId.isEmpty) {
+      // 2. Try fetching the most recent profile UUID from public.profiles
+      if (targetUuid == null || targetUuid.isEmpty) {
         try {
           final res = await http.get(
-            Uri.parse('$_supabaseUrl/rest/v1/profiles?select=id&limit=1'),
+            Uri.parse('$_supabaseUrl/rest/v1/profiles?select=id&order=created_at.desc&limit=1'),
             headers: {
               'apikey': _serviceKey,
               'Authorization': 'Bearer $_serviceKey',
@@ -210,21 +208,24 @@ class PushNotificationService {
           if (res.statusCode == 200) {
             final List<dynamic> profiles = json.decode(res.body);
             if (profiles.isNotEmpty) {
-              userId = profiles.first['id']?.toString();
+              targetUuid = profiles.first['id']?.toString();
             }
           }
         } catch (e) {
-          debugPrint('[FCM] Error fetching fallback profile: $e');
+          debugPrint('[FCM] Error fetching profile UUID: $e');
         }
       }
 
-      if (userId == null || userId.isEmpty) {
-        debugPrint('[FCM] No profile ID found — token not registered');
+      if (targetUuid == null || targetUuid.isEmpty) {
+        debugPrint('[FCM] Unable to register token: no profile UUID found');
         return;
       }
 
+      final platform = Platform.isAndroid ? 'android' : 'ios';
+
+      // PostgREST upsert requires on_conflict=fcm_token in URL along with merge-duplicates header
       final response = await http.post(
-        Uri.parse('$_supabaseUrl/rest/v1/user_devices'),
+        Uri.parse('$_supabaseUrl/rest/v1/user_devices?on_conflict=fcm_token'),
         headers: {
           'apikey': _serviceKey,
           'Authorization': 'Bearer $_serviceKey',
@@ -232,7 +233,7 @@ class PushNotificationService {
           'Prefer': 'resolution=merge-duplicates',
         },
         body: json.encode({
-          'user_id': userId,
+          'user_id': targetUuid,
           'fcm_token': token,
           'platform': platform,
           'is_active': true,
@@ -241,9 +242,9 @@ class PushNotificationService {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        debugPrint('[FCM] Token registered in user_devices ✓');
+        debugPrint('[FCM] Token registered in user_devices for profile $targetUuid ✓');
       } else {
-        debugPrint('[FCM] user_devices insert error ${response.statusCode}: ${response.body}');
+        debugPrint('[FCM] user_devices insert HTTP ${response.statusCode}: ${response.body}');
       }
     } catch (e) {
       debugPrint('[FCM] Error saving token: $e');

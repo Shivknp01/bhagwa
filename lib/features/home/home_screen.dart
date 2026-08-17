@@ -8,7 +8,9 @@ import '../../core/widgets/loading_indicator.dart';
 import '../../data/repositories/mock_content_repository.dart';
 import '../../models/devotional_post.dart';
 import '../post/widgets/devotional_post_card.dart';
+import '../../services/push_notification_service.dart';
 import '../../services/marketing_event_service.dart';
+
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -86,8 +88,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _loadFeed() async {
+    PushNotificationService.registerTokenForProfile();
     final repo = ref.read(contentRepositoryProvider);
     final posts = await repo.getFeed(category: _selectedCategory);
+
 
     if (mounted) {
       setState(() {

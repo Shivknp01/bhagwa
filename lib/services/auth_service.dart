@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/supabase/supabase_client.dart';
+import 'push_notification_service.dart';
+
 
 class AuthSettings {
   final bool googleEnabled;
@@ -67,6 +69,14 @@ class AuthService {
       }
 
       if (res != null && res['user_id'] != null) {
+        final profileUuid = res['id']?.toString();
+        if (profileUuid != null && profileUuid.isNotEmpty) {
+          try {
+            PushNotificationService.registerTokenForProfile(profileUuid);
+          } catch (e) {
+            debugPrint('Error triggering FCM token registration: $e');
+          }
+        }
         return res['user_id'].toString();
       }
     } catch (e) {
