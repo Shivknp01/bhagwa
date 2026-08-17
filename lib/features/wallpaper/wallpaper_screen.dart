@@ -30,9 +30,10 @@ class WallpaperScreen extends ConsumerStatefulWidget {
 class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
   String? _selectedDeityId;
   List<Map<String, String>> _dynamicWallpapers = [];
+  List<DeityAvatarItem> _deityAvatarList = _defaultDeityAvatars;
 
-  // 1. Deity Avatars matching requested features
-  static const List<DeityAvatarItem> _deityAvatars = [
+  // 1. Default Deity Avatars
+  static const List<DeityAvatarItem> _defaultDeityAvatars = [
     DeityAvatarItem(
       id: 'shiva',
       name: 'Shiva Ji',
@@ -146,9 +147,38 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
   Future<void> _loadWallpapers() async {
     try {
       final repo = ref.read(contentRepositoryProvider);
+
+      // 1. Fetch Deities dynamically from Supabase
+      final fetchedDeities = await repo.getDeities();
+
+      // 2. Fetch Wallpapers dynamically from Supabase
       final feed = await repo.getFeed(category: 'Wallpaper');
+
       if (mounted) {
         setState(() {
+          if (fetchedDeities.isNotEmpty) {
+            final dynamicAvatars = fetchedDeities.map((d) {
+              final iconStr = d.icon.trim();
+              return DeityAvatarItem(
+                id: d.name.toLowerCase(),
+                name: d.name,
+                imageUrl: iconStr.startsWith('http')
+                    ? iconStr
+                    : 'https://images.unsplash.com/photo-1609137144813-7d9921338f24?w=400&q=80',
+              );
+            }).toList();
+
+            // Merge dynamic deities with default list (avoid duplicates)
+            final Map<String, DeityAvatarItem> merged = {};
+            for (final a in _defaultDeityAvatars) {
+              merged[a.id] = a;
+            }
+            for (final a in dynamicAvatars) {
+              merged[a.id] = a;
+            }
+            _deityAvatarList = merged.values.toList();
+          }
+
           final fetched = feed
               .where((p) => p.contentType == PostContentType.wallpaper && p.imageUrl != null)
               .map((p) => {
@@ -169,6 +199,7 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
       }
     }
   }
+
 
   void _openWallpaperPreview(String imageUrl, String title) {
     Navigator.push(
@@ -245,10 +276,10 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         physics: const BouncingScrollPhysics(),
-                        itemCount: _deityAvatars.length,
+                        itemCount: _deityAvatarList.length,
                         separatorBuilder: (_, _) => const SizedBox(width: 14),
                         itemBuilder: (context, index) {
-                          final avatar = _deityAvatars[index];
+                          final avatar = _deityAvatarList[index];
                           final isSelected = _selectedDeityId == avatar.id;
 
                           return GestureDetector(

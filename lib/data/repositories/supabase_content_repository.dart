@@ -83,7 +83,35 @@ class SupabaseContentRepository implements ContentRepository {
   Future<Horoscope?> getHoroscopeBySign(String sign) => _fallback.getHoroscopeBySign(sign);
 
   @override
-  Future<List<Deity>> getDeities() => _fallback.getDeities();
+  Future<List<Deity>> getDeities() async {
+    try {
+      final response = await _client
+          .from('deities')
+          .select()
+          .eq('is_active', true)
+          .order('created_at', ascending: true);
+
+      if ((response as List).isEmpty) {
+        return _fallback.getDeities();
+      }
+
+
+      final List<dynamic> data = response;
+      return data.map((row) {
+        return Deity(
+          id: row['id']?.toString() ?? '',
+          name: row['name']?.toString() ?? 'Deity',
+          title: row['title']?.toString() ?? row['name']?.toString() ?? 'Devotional',
+          symbol: row['symbol']?.toString() ?? '🚩',
+          icon: row['image_url']?.toString() ?? row['icon_key']?.toString() ?? '',
+        );
+      }).toList();
+    } catch (e) {
+      debugPrint('Supabase getDeities notice (using fallback): $e');
+      return _fallback.getDeities();
+    }
+  }
+
 
   @override
   Future<List<Comment>> getComments(String postId) => _fallback.getComments(postId);
