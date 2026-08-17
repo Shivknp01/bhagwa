@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/widgets/language_toggle_button.dart';
 import '../../data/repositories/mock_content_repository.dart';
 import '../../models/devotional_post.dart';
 import '../post/widgets/wallpaper_cta_sheet.dart';
@@ -28,7 +29,7 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
   String? _selectedDeityId;
   List<Map<String, String>> _dynamicWallpapers = [];
 
-  // 1. Deity Avatars matching screenshot
+  // 1. Deity Avatars matching requested features
   static const List<DeityAvatarItem> _deityAvatars = [
     DeityAvatarItem(
       id: 'shiva',
@@ -52,7 +53,7 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
     ),
     DeityAvatarItem(
       id: 'saraswati',
-      name: 'Saraswati Mata',
+      name: 'Saraswati',
       imageUrl: 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=400&q=80',
     ),
     DeityAvatarItem(
@@ -72,7 +73,7 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
     ),
   ];
 
-  // 2. Curated High-Res Wallpapers for Live & New Sections
+  // 2. Curated High-Res Wallpapers
   static const List<Map<String, String>> _topLiveWallpapers = [
     {
       'title': 'Shri Krishna Playing Flute 🪈',
@@ -152,8 +153,6 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
                     'title': p.title,
                     'deity': p.deity.toLowerCase(),
                     'imageUrl': p.imageUrl!,
-
-
                   })
               .toList();
 
@@ -168,7 +167,6 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
       }
     }
   }
-
 
   void _openWallpaperCtaSheet(String imageUrl, String title) {
     showModalBottomSheet(
@@ -190,61 +188,62 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final primaryTextColor = theme.textTheme.bodyLarge?.color ?? Colors.black87;
+    final secondaryTextColor = theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7) ?? Colors.grey;
 
     final filteredTopLive = _getFilteredList(_topLiveWallpapers);
     final filteredNew = _getFilteredList(_dynamicWallpapers.isNotEmpty ? _dynamicWallpapers : _staticNewWallpapers);
 
-
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0D0D0D) : const Color(0xFF141414), // Premium dark theme matching screenshot
+      backgroundColor: theme.scaffoldBackgroundColor, // Uses app's primary theme background (warm cream in light mode, midnight in dark mode)
+      appBar: AppBar(
+        title: const Text('Sacred Wallpapers 🖼️'),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        foregroundColor: primaryTextColor,
+        actions: const [
+          LanguageToggleButton(),
+          SizedBox(width: 8),
+        ],
+      ),
       body: SafeArea(
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
-            // App Bar with back button
+            // Section 1: Hero Title & Deity Circle Avatars Row
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 26),
-                      onPressed: () => Navigator.maybePop(context),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Section 1: Title & Deity Circle Avatars Row
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 8.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Wallpapers of all gods and\ngoddesses',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
+                    Text(
+                      'Wallpapers of all gods and goddesses',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        color: primaryTextColor,
                         letterSpacing: -0.2,
-                        height: 1.25,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Tap any deity to filter wallpapers',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: secondaryTextColor,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
 
                     // Horizontal Scrolling Deity Avatars
                     SizedBox(
-                      height: 104,
+                      height: 106,
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         physics: const BouncingScrollPhysics(),
                         itemCount: _deityAvatars.length,
                         separatorBuilder: (_, _) => const SizedBox(width: 14),
-
                         itemBuilder: (context, index) {
                           final avatar = _deityAvatars[index];
                           final isSelected = _selectedDeityId == avatar.id;
@@ -253,7 +252,7 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
                             onTap: () {
                               setState(() {
                                 if (_selectedDeityId == avatar.id) {
-                                  _selectedDeityId = null; // Toggle off filter
+                                  _selectedDeityId = null; // Reset filter
                                 } else {
                                   _selectedDeityId = avatar.id;
                                 }
@@ -266,19 +265,19 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
                                 children: [
                                   AnimatedContainer(
                                     duration: const Duration(milliseconds: 200),
-                                    padding: const EdgeInsets.all(2.5),
+                                    padding: const EdgeInsets.all(3.0),
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       border: Border.all(
                                         color: isSelected
                                             ? AppColors.primarySaffron
-                                            : Colors.white.withValues(alpha: 0.15),
-                                        width: isSelected ? 2.5 : 1.0,
+                                            : theme.dividerColor,
+                                        width: isSelected ? 3.0 : 1.5,
                                       ),
                                       boxShadow: isSelected
                                           ? [
                                               BoxShadow(
-                                                color: AppColors.primarySaffron.withValues(alpha: 0.4),
+                                                color: AppColors.primarySaffron.withValues(alpha: 0.35),
                                                 blurRadius: 10,
                                                 spreadRadius: 2,
                                               )
@@ -286,8 +285,8 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
                                           : null,
                                     ),
                                     child: CircleAvatar(
-                                      radius: 30,
-                                      backgroundColor: Colors.grey.shade900,
+                                      radius: 28,
+                                      backgroundColor: theme.colorScheme.surface,
                                       backgroundImage: NetworkImage(avatar.imageUrl),
                                     ),
                                   ),
@@ -300,7 +299,7 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
                                     style: TextStyle(
                                       color: isSelected
                                           ? AppColors.primarySaffron
-                                          : Colors.white.withValues(alpha: 0.9),
+                                          : primaryTextColor,
                                       fontSize: 12,
                                       fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                                     ),
@@ -317,7 +316,7 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
               ),
             ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            const SliverToBoxAdapter(child: SizedBox(height: 20)),
 
             // Section 2: Top Live Wallpapers
             if (filteredTopLive.isNotEmpty) ...[
@@ -327,26 +326,37 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Top Live Wallpapers',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: -0.2,
-                        ),
+                      Row(
+                        children: [
+                          Container(
+                            width: 4,
+                            height: 18,
+                            decoration: BoxDecoration(
+                              color: AppColors.primarySaffron,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Top Live Wallpapers',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              color: primaryTextColor,
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 14),
 
                       // Horizontal 9:16 Cards List
                       SizedBox(
-                        height: 250,
+                        height: 240,
                         child: ListView.separated(
                           scrollDirection: Axis.horizontal,
                           physics: const BouncingScrollPhysics(),
                           itemCount: filteredTopLive.length,
                           separatorBuilder: (_, _) => const SizedBox(width: 14),
-
                           itemBuilder: (context, index) {
                             final item = filteredTopLive[index];
 
@@ -356,7 +366,7 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
                                 item['title']!,
                               ),
                               child: Container(
-                                width: 145,
+                                width: 140,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(16),
                                   image: DecorationImage(
@@ -365,7 +375,7 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.5),
+                                      color: Colors.black.withValues(alpha: 0.2),
                                       blurRadius: 8,
                                       offset: const Offset(0, 4),
                                     ),
@@ -383,7 +393,7 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
                                             end: Alignment.bottomCenter,
                                             colors: [
                                               Colors.transparent,
-                                              Colors.black.withValues(alpha: 0.7),
+                                              Colors.black.withValues(alpha: 0.75),
                                             ],
                                           ),
                                         ),
@@ -392,17 +402,19 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
 
                                     // Live Badge at Top Right
                                     Positioned(
-                                      top: 10,
-                                      right: 10,
+                                      top: 8,
+                                      right: 8,
                                       child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                                         decoration: BoxDecoration(
-                                          color: Colors.black.withValues(alpha: 0.6),
+                                          color: AppColors.primarySaffron,
                                           borderRadius: BorderRadius.circular(12),
-                                          border: Border.all(
-                                            color: AppColors.amberGold.withValues(alpha: 0.6),
-                                            width: 1,
-                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: AppColors.primarySaffron.withValues(alpha: 0.4),
+                                              blurRadius: 4,
+                                            ),
+                                          ],
                                         ),
                                         child: const Row(
                                           mainAxisSize: MainAxisSize.min,
@@ -410,14 +422,14 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
                                             Text(
                                               'LIVE',
                                               style: TextStyle(
-                                                color: AppColors.amberGold,
+                                                color: Colors.white,
                                                 fontSize: 9,
                                                 fontWeight: FontWeight.bold,
                                                 letterSpacing: 0.5,
                                               ),
                                             ),
-                                            SizedBox(width: 3),
-                                            Text('✨', style: TextStyle(fontSize: 9)),
+                                            SizedBox(width: 2),
+                                            Text('✨', style: TextStyle(fontSize: 8)),
                                           ],
                                         ),
                                       ),
@@ -425,7 +437,7 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
 
                                     // Title at Bottom
                                     Positioned(
-                                      bottom: 12,
+                                      bottom: 10,
                                       left: 10,
                                       right: 10,
                                       child: Text(
@@ -465,24 +477,43 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'New wallpapers',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: -0.2,
-                          ),
+                        Row(
+                          children: [
+                            Container(
+                              width: 4,
+                              height: 18,
+                              decoration: BoxDecoration(
+                                color: AppColors.primarySaffron,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'New Wallpapers',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                color: primaryTextColor,
+                              ),
+                            ),
+                          ],
                         ),
                         if (_selectedDeityId != null)
                           GestureDetector(
                             onTap: () => setState(() => _selectedDeityId = null),
-                            child: const Text(
-                              'Show All ↺',
-                              style: TextStyle(
-                                color: AppColors.primarySaffron,
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AppColors.primarySaffron.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Text(
+                                'Show All ↺',
+                                style: TextStyle(
+                                  color: AppColors.primarySaffron,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
@@ -496,13 +527,13 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
 
             // Grid of New Wallpapers
             if (filteredNew.isEmpty)
-              const SliverToBoxAdapter(
+              SliverToBoxAdapter(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 40.0),
+                  padding: const EdgeInsets.symmetric(vertical: 40.0),
                   child: Center(
                     child: Text(
                       'No wallpapers found for this deity 🙏',
-                      style: TextStyle(color: Colors.grey, fontSize: 14),
+                      style: TextStyle(color: secondaryTextColor, fontSize: 14),
                     ),
                   ),
                 ),
@@ -535,7 +566,7 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.4),
+                                color: Colors.black.withValues(alpha: 0.15),
                                 blurRadius: 6,
                                 offset: const Offset(0, 3),
                               ),
@@ -562,25 +593,25 @@ class _WallpaperScreenState extends ConsumerState<WallpaperScreen> {
 
                               // Action Icon Top Right
                               Positioned(
-                                top: 10,
-                                right: 10,
+                                top: 8,
+                                right: 8,
                                 child: Container(
                                   padding: const EdgeInsets.all(6),
                                   decoration: BoxDecoration(
-                                    color: Colors.black.withValues(alpha: 0.5),
+                                    color: Colors.black.withValues(alpha: 0.45),
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(
                                     Icons.wallpaper_rounded,
                                     color: Colors.white,
-                                    size: 16,
+                                    size: 15,
                                   ),
                                 ),
                               ),
 
                               // Bottom Title
                               Positioned(
-                                bottom: 12,
+                                bottom: 10,
                                 left: 10,
                                 right: 10,
                                 child: Text(
